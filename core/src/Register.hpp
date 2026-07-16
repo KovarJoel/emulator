@@ -11,7 +11,7 @@ namespace emulator::core {
   class Register {
   public:
     enum class FlagIndex {
-      Zero, Negative, Overflow, Carry, COUNT
+      Zero, Sign, Carry, Overflow, COUNT
     };
 
   public:
