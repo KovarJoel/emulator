@@ -13,7 +13,6 @@
 #include <fstream>
 #include <memory>
 #include <span>
-#include <utility>
 #include <vector>
 
 namespace emulator::core {

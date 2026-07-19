@@ -11,12 +11,15 @@
 Used for e.g. arithmetic, logic and load/store instructions.
 ```c
     [   OP   ][ WIDTH ][ DEST ][ SRC1 ][ MODE1 ][ SRC2 ][ MODE2]
-//    8 bits   2 bits   4 bits  4 bits   1 bit   4 bits   1 bit     2 bits
+//    8 bits   2 bits   4 bits  4 bits   1 bit   4 bits   1 bit
 //    total = 24 bits
     [                   IMMEDIATE1                     ]  // optional
     [                   IMMEDIATE2                     ]  // optional
 //                       24 bits
 ```
+
+**Note:** For the store instruction, the `DEST` actually refers to the source
+register and `SRC1` and `SRC2` refer to the memory location being written to.
 
 ## Branch Encoding
 Use for conditional branches with immediate targets.

@@ -11,6 +11,7 @@
 #include <fstream>
 #include <span>
 #include <type_traits>
+#include <utility>
 
 using namespace emulator::core;
 

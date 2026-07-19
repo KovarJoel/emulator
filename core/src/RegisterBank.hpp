@@ -9,11 +9,19 @@ namespace emulator::core {
   public:
     constexpr static size_t REGISTER_COUNT = 16;
 
+    auto begin(this auto&& self) {
+      return self.m_registers.begin();
+    }
+
+    auto end(this auto&& self) {
+      return self.m_registers.end();
+    }
+
     auto& operator[](this auto&& self, size_t index) {
       return self.m_registers[index];
     }
 
-    auto& get0(this auto&& self) {
+    auto& getZero(this auto&& self) {
       return self[0];
     }
 
@@ -30,6 +38,6 @@ namespace emulator::core {
     }
 
   private:
-    std::array<Register, REGISTER_COUNT> m_registers;
+    std::array<Register, REGISTER_COUNT> m_registers{ Register::FixAtZero{} };
   };
 }

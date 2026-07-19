@@ -11,12 +11,23 @@ namespace emulator::core {
   class Register {
   public:
     enum class FlagIndex {
-      Zero, Sign, Carry, Overflow, COUNT
+      Zero, Sign, Carry, Overflow
     };
 
+    struct FixAtZero {};
+
+    constexpr static size_t INDEX_MSB = 31;
+    constexpr static size_t INDEX_LSB = 0;
+
   public:
+    Register() = default;
+    Register(FixAtZero)
+      : m_data{}, m_fix_at_zero{ true } {}
+
     template <EmulatorType T>
     auto get() const {
+      if (m_fix_at_zero) return T{ 0 };
+
       T value{};
       std::memcpy(&value, m_data.data(), sizeof value);
       return value;
@@ -24,6 +35,8 @@ namespace emulator::core {
 
     template <EmulatorType T>
     void set(T value) {
+      if (m_fix_at_zero) return;
+
       std::memcpy(m_data.data(), &value, sizeof value);
 
       if constexpr (sizeof(T) < sizeof m_data) {
@@ -44,12 +57,12 @@ namespace emulator::core {
 
     void setBit(size_t index, bool value = true) {
       set<uint32_t>(
-        get<uint32_t>() & ~(1u << index) | (static_cast<unsigned>(value) << index)
+        (get<uint32_t>() & ~(1u << index)) | (static_cast<unsigned>(value) << index)
       );
     }
 
-    bool setBit(FlagIndex index, bool value = true) {
-      setBit(std::to_underlying(index));
+    void setBit(FlagIndex index, bool value = true) {
+      setBit(std::to_underlying(index), value);
     }
 
     void toggleBit(size_t index) {
@@ -64,5 +77,6 @@ namespace emulator::core {
 
   private:
     std::array<std::byte, 4> m_data{};
+    const bool m_fix_at_zero{};
   };
 }

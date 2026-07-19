@@ -6,8 +6,8 @@ The following addressing modes are supported for source operands:
 
 Immediates are assumed to be in decimal representation. For hexadecimal prefix with `0x...`, for
 octal prefix with `0o...`, for binary prefix with `0b...`.
-Decimal immediates are interpreted as negative if they are prefixed with a minus `-` sign.
-Immediates in other bases are always unsigned.
+Immediates are always interpreted as unsigned and therefore zero extended.
+To use negative values for immediates, load them into a register as follows: `SUB dest, r0, imm`.
 
 Mnemonics, type specifiers, hexadecimal digits and register names are case insensitive. 
 
@@ -30,14 +30,13 @@ e.g. `LDSX.H` for reading a signed half word (16 bits with sign extension).
 ### Load
 ```
 LD dest, src
-LDSX dest, src
 LDZX dest, src
 ```
 Loads a value stored at `src` into `dest`.
 The source must refer to an address where at least `d` bytes are available for reading.
 
-`LD` may only be used with word sized operands. `LDSX` sign-extends with smaller operands.
-`LDZX` zero-extends with smaller operands.
+`LD` sign-extends with smaller than word size operands.
+`LDZX` zero-extends with smaller than word size operands.
 
 Reading from an address range without read permissions leads to immediate termination of the program.
 
@@ -51,6 +50,10 @@ ST dest, src
 ```
 Stores a value in `src` into `dest`.
 The destination must refer to an address where at least `d` bytes can be written to.
+The source must refer to a register. Storing immediates is not possible.
+
+Storing a less than word sized data type results in only the less significant bytes
+being written to memory.
 
 Writing to an address range without write permissions leads to immediate termination of the program.
 
@@ -90,7 +93,7 @@ is lost.
 the MSBs of `src1` and `src2` are different, i.e. the result would not be representable
 with the operand width.
 
-### Multiplicate
+### Multiply
 ```
 MUL dest, src1, src2
 ```
@@ -102,7 +105,7 @@ Stores the result (only the lower word) of `src1 * src2` into the destination re
 
 **Carry Flag:** Set iff the result would exceed the operand width.
 
-**Overflow Flag:** Set iff the MSB of the result is not the same as the exclusive or combination
+**Overflow Flag:** Set iff the MSB of the result is not the same as the exclusive-or combination
 of the MSBs of `src1` and `src2`. 
 
 ### Divide
@@ -136,6 +139,8 @@ from the unsigned division.
 i.e. `src1` is negative. 
 
 ## Shifts and Rotations
+The number of positions to shift/rotate is always interpreted as unsigned value.
+
 ### Rotate Left
 ```
 ROL dest, src1, src2
@@ -176,7 +181,7 @@ For each shifted position, the MSB is shifted into the carry flag and the LSB is
 
 ### Logical Right shift
 ```
-SLR dest, src1, src2
+SRL dest, src1, src2
 ```
 Shifts the value in `src1` to the right (towards the  LSB) by `src2` positions and stores
 the result in the destination operand.
@@ -192,7 +197,7 @@ For each shifted position, the LSB is shifted into the carry flag and the MSB is
 
 ### Arithmetic Right shift
 ```
-SAR dest, src1, src2
+SRA dest, src1, src2
 ```
 Shifts the value in `src1` to the right (towards the LSB) by `src2` positions and stores
 the result in the destination operand.
@@ -261,20 +266,20 @@ Branches can not be used with registers as source for the label.
 | Instruction | Description |
 | ----------- | ----------- |
 | **equal:**
-| BEQ         | Branch if equal (ZF=1)
-| BEQZ        | Branch if equal zero (ZF=1), pseudoinstruction
-| BNEQ        | Branch if not equal (ZF=0)
-| BNEQZ       | Branch if not eual zero (ZF=1), pseudoinstruction
+| BE          | Branch if equal (ZF=1)
+| BEZ         | Branch if equal zero (ZF=1), pseudoinstruction
+| BNE         | Branch if not equal (ZF=0)
+| BNEZ        | Branch if not eual zero (ZF=1), pseudoinstruction
 | **signed:**
 | BGT         | Branch if greater than (ZF=0 and SF=OF)
 | BLT         | Branch if less than (ZF=0 and SF!=OF)
-| BGEQ        | Branch if greather than or equal (ZF=1 or SF=OF)
-| BLEQ        | Branch if less than or equal (ZF=1 or SF!=OF)
+| BGE         | Branch if greather than or equal (ZF=1 or SF=OF)
+| BLE         | Branch if less than or equal (ZF=1 or SF!=OF)
 | **unsigned:**
-| BGTU         | Branch unsigned if greater than (ZF=0 and CF=0)
-| BLTU         | Branch unsigned if less than (CF=1)
-| BGEQU        | Branch unsigned if greather than or equal (CF=0)
-| BLEQU        | Branch unsigned if less than or equal (ZF=1 or CF=1)
+| BGTU        | Branch unsigned if greater than (ZF=0 and CF=0)
+| BLTU        | Branch unsigned if less than (CF=1)
+| BGEU        | Branch unsigned if greather than or equal (CF=0)
+| BLEU        | Branch unsigned if less than or equal (ZF=1 or CF=1)
 | **other:**
 | BC          | Branch if carry (CF=1)
 | BNC         | Branch if not carry (CF=0)
@@ -371,7 +376,7 @@ Equivalent to `SUB r0, src1, src2`.
 
 ### Arithmetic Left shift
 ```
-SAL dest, src1, src2
+SLA dest, src1, src2
 ```
-Divides the value in `src1` by 2.
+Multiplies the value in `src1` by 2.
 Equivalent to `SLL dest, src1, src2`.
