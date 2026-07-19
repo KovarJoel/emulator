@@ -41,7 +41,7 @@ namespace emulator::core::instructions {
     void setData(const InstructionData& data);
     const InstructionData& getData() const;
 
-    void execute(ProcessorState& state);
+    void execute(ProcessorState& state) const;
 
   private:
     InstructionData m_data;

@@ -9,10 +9,11 @@
 namespace emulator::core::instructions::operations::bases {
   class Base {
   public:
-    void execute(const InstructionData&, ProcessorState&) {
+    void execute(const InstructionData&, ProcessorState&) const {
       throw exceptions::InvalidOperation{};
     }
 
+  protected:
     constexpr static uint32_t widthToBytes(InstructionData::Width width) {
       switch (width) {
         case InstructionData::Width::Byte:     return 1;

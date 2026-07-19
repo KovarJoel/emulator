@@ -12,7 +12,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchEqual : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Zero)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }
@@ -24,7 +24,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchNotEqual : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }
@@ -36,7 +36,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchGreater : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -51,7 +51,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchLess : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -66,7 +66,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchGreaterEqual : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -81,7 +81,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchLessEqual : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -96,7 +96,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchGreaterUnsigned : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -111,7 +111,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchLessUnsigned : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -126,7 +126,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchGreaterEqualUnsigned : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -141,7 +141,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchLessEqualUnsigned : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       const auto flags = state.registers.getFLAGS();
       using enum Register::FlagIndex;
 
@@ -156,7 +156,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchCarry : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }
@@ -168,7 +168,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchNotCarry : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }
@@ -180,7 +180,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchOverflow : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }
@@ -192,7 +192,7 @@ namespace emulator::core::instructions::operations {
 
   class BranchNotOverflow : public bases::Base {
   public:
-    void execute(const InstructionData& data, ProcessorState& state) {
+    void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
       }

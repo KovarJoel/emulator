@@ -1,7 +1,7 @@
 #include "Instruction.hpp"
 
 namespace emulator::core::instructions {
-  void Instruction::execute(ProcessorState& state) {
+  void Instruction::execute(ProcessorState& state) const {
     std::visit([&](auto& operation) {
       operation.execute(m_data, state);
     }, m_instruction);
