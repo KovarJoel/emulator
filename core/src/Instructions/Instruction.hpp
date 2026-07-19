@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Exceptions.hpp"
 #include "InstructionData.hpp"
 #include "ProcessorState.hpp"
 #include "Operations.hpp"
@@ -30,9 +31,10 @@ namespace emulator::core::instructions {
     inline InstructionVariant opcodeToInstructionVariant(Opcode code) {
       switch (code) {
         #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE(mnemonic, type, class, ...) case Opcode::mnemonic: return operations::class{};
-        EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
+          EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
         #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE
       }
+      throw exceptions::InvalidOperation{};
     }
   }
 

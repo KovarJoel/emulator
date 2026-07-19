@@ -9,6 +9,7 @@ namespace emulator::core::instructions {
 
   void Instruction::setData(const InstructionData& data) {
     m_data = data;
+    m_instruction = internal::opcodeToInstructionVariant(m_data.getOpcode());
   }
 
   const InstructionData& Instruction::getData() const {
