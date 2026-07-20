@@ -5,6 +5,7 @@ namespace emulator::core::instructions {
     std::visit([&](auto& operation) {
       operation.execute(m_data, state);
     }, m_instruction);
+    ++state.cycle_count;
   }
 
   void Instruction::setData(const InstructionData& data) {
