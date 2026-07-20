@@ -10,16 +10,18 @@ namespace emulator::core::instructions::operations {
 
     state.registers[data.getDestRegisterAddr()].set<uint32_t>(result);
 
-    if (result > std::numeric_limits<uint32_t>::max()) {
-      state.registers.getFLAGS().setBit(Register::FlagIndex::Carry);
-    }
+    state.registers.getFLAGS().setBit(
+      Register::FlagIndex::Carry,
+      result > std::numeric_limits<uint32_t>::max()
+    );
 
     const bool value1_signed = getWordBit(value1, Register::INDEX_MSB);
     const bool value2_signed = getWordBit(value2, Register::INDEX_MSB);
     const bool result_signed = getWordBit(result, Register::INDEX_MSB);
-    if ((value1_signed != value2_signed) != result_signed) {
-      state.registers.getFLAGS().setBit(Register::FlagIndex::Overflow);
-    }
+    state.registers.getFLAGS().setBit(
+      Register::FlagIndex::Overflow,
+      (value1_signed != value2_signed) != result_signed
+    );
 
     updateFlagsZeroAndSign(data, state);
     advancePC(data, state);

@@ -3,9 +3,10 @@
 namespace emulator::core::instructions::operations {
   namespace {
     void updateFlagOverflow(ProcessorState& state, uint32_t src, uint32_t dest) {
-      if ((src & (1u << Register::INDEX_MSB)) != (dest & (1u << Register::INDEX_MSB))) {
-        state.registers.getFLAGS().setBit(Register::FlagIndex::Overflow);
-      }
+      state.registers.getFLAGS().setBit(
+        Register::FlagIndex::Overflow,
+        (src & (1u << Register::INDEX_MSB)) != (dest & (1u << Register::INDEX_MSB))
+      );
     }
   }
 

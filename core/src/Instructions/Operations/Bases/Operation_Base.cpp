@@ -4,12 +4,15 @@
 
 namespace emulator::core::instructions::operations::bases {
   void Base::updateFlagsZeroAndSign(const InstructionData& data, ProcessorState& state) const {
-    if (state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0) {
-      state.registers.getFLAGS().setBit(Register::FlagIndex::Zero);
-    }
-    if (state.registers[data.getDestRegisterAddr()].getBit(Register::INDEX_MSB)) {
-      state.registers.getFLAGS().setBit(Register::FlagIndex::Sign);
-    }
+    state.registers.getFLAGS().setBit(
+      Register::FlagIndex::Zero,
+      state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0
+    );
+    
+    state.registers.getFLAGS().setBit(
+      Register::FlagIndex::Sign,
+      state.registers[data.getDestRegisterAddr()].getBit(Register::INDEX_MSB)
+    );
   }
 
   void Base::advancePC(const InstructionData& data, ProcessorState& state) const {

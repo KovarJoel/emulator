@@ -31,9 +31,10 @@ namespace emulator::core::instructions::operations {
 
     state.registers[data.getDestRegisterAddr()].set(result);
 
-    if (state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0) {
-      state.registers.getFLAGS().setBit(Register::FlagIndex::Zero);
-    }
+    state.registers.getFLAGS().setBit(
+      Register::FlagIndex::Zero,
+      state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0
+    );
     advancePC(data, state);
   }
 }
