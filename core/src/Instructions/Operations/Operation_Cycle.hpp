@@ -8,7 +8,11 @@ namespace emulator::core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       state.registers[data.getDestRegisterAddr()].set(state.cycle_count);
 
-      updateFlagsZeroAndSign(data, state);
+      state.registers.getFLAGS().setBit(
+        Register::FlagIndex::Zero,
+        state.cycle_count == 0
+      );
+
       advancePC(data, state);
     }
   };

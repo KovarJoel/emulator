@@ -1,7 +1,5 @@
 #include "Operation_Base.hpp"
 
-#include "Exceptions.hpp"
-
 namespace emulator::core::instructions::operations::bases {
   void Base::updateFlagsZeroAndSign(const InstructionData& data, ProcessorState& state) const {
     state.registers.getFLAGS().setBit(

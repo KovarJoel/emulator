@@ -302,8 +302,6 @@ destination register. Wraps around to `0` after `UINT32_MAX` cycles.
 
 **Zero Flag:** Set iff the result is 0.
 
-**Sign Flag:** Set iff the MSB of the result is 1.
-
 ## Pseudo Instructions
 ### No-Operation
 ```
