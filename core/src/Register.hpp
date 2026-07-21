@@ -75,6 +75,10 @@ namespace emulator::core {
       toggleBit(std::to_underlying(index));
     }
 
+    bool operator==(const Register& other) const {
+      return m_data == other.m_data;
+    }
+
   private:
     std::array<std::byte, 4> m_data{};
     const bool m_fix_at_zero{};

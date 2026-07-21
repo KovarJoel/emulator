@@ -98,3 +98,24 @@ TEST_CASE("Bit Operations", "[Register]") {
   }
   CHECK(reg.get<uint32_t>() == val);
 }
+
+TEST_CASE("Equality", "[Register]") {
+  Register reg1;
+  Register reg2;
+  CHECK(reg1 == reg2);
+
+  reg1.set(1);
+  CHECK(reg1 != reg2);
+
+  reg2.set(1);
+  CHECK(reg1 == reg2);
+
+  reg1.set(-1);
+  reg2.set(0xFFFFFFFF);
+  CHECK(reg1 == reg2);
+
+  Register reg3{ Register::FixAtZero{} };
+  CHECK(reg1 != reg3);
+  reg3.set(-1);
+  CHECK(reg1 == reg3);
+}

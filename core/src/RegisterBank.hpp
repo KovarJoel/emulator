@@ -37,6 +37,8 @@ namespace emulator::core {
       return self[15];
     }
 
+    bool operator==(const RegisterBank&) const = default;
+
   private:
     std::array<Register, REGISTER_COUNT> m_registers{ Register::FixAtZero{} };
   };
