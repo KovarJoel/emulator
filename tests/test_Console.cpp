@@ -20,6 +20,7 @@ TEST_CASE("Sizes", "[Memory::Mappings::Console]") {
 
 TEST_CASE("Type Traits", "[Memory::Mappings::Console]") {
   STATIC_CHECK(std::is_trivially_copyable_v<Console>);
+  STATIC_CHECK(std::is_implicit_lifetime_v<Console>);
 }
 
 TEST_CASE("Memory Order", "[Memory::Mappings::Console]") {
