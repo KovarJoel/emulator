@@ -22,7 +22,22 @@ namespace emulator::core {
   public:
     Register() = default;
     Register(FixAtZero)
-      : m_data{}, m_fix_at_zero{ true } {}
+      : m_data{}, m_fix_at_zero{ true } {
+    }
+    Register(const Register& other)
+      : m_data( other.m_data ), m_fix_at_zero() {
+    }
+    Register(Register&& other)
+      : m_data{ other.m_data }, m_fix_at_zero{} {
+    }
+    Register& operator=(const Register& other) {
+      m_data = other.m_data;
+      return *this;
+    }
+    Register& operator=(Register&& other) {
+      m_data = other.m_data;
+      return *this;
+    }
 
     template <EmulatorType T>
     auto get() const {
@@ -81,6 +96,6 @@ namespace emulator::core {
 
   private:
     std::array<std::byte, 4> m_data{};
-    const bool m_fix_at_zero{};
+    bool m_fix_at_zero{};
   };
 }
