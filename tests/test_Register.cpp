@@ -117,5 +117,7 @@ TEST_CASE("Equality", "[Register]") {
   Register reg3{ Register::FixAtZero{} };
   CHECK(reg1 != reg3);
   reg3.set(-1);
+  CHECK(reg1 != reg3);
+  reg1.set(0);
   CHECK(reg1 == reg3);
 }
