@@ -52,6 +52,7 @@ TEST_CASE("Endianness", "[Memory]") {
 
 TEST_CASE("Type Traits", "[Memory]") {
   STATIC_CHECK(std::is_trivially_copyable_v<Memory::Header>);
+  STATIC_CHECK(std::is_implicit_lifetime_v<Memory::Header>);
 }
 
 TEST_CASE("Invalid Read Accesses", "[Memory]") {
@@ -168,4 +169,23 @@ TEST_CASE("Load Program", "[Memory]") {
   invalid_binary = valid_binary;
   invalid_binary[20] = 0x12; // ram_begin not page aligned
   CHECK_THROWS_AS(memory.loadProgram(toSpan(invalid_binary)), InvalidBinary);
+}
+
+TEST_CASE("Equality", "[Memory]") {
+  Memory mem1;
+  Memory mem2 = mem1;
+  CHECK(mem1 == mem2);
+  CHECK(!(mem1 != mem2));
+
+  for (size_t i = Memory::OFFSET_CODE; i < Memory::RAM_SIZE; i += Memory::RAM_SIZE / 100) {
+    mem1.set(i, static_cast<uint32_t>(i));
+  }
+
+  CHECK(mem1 != mem2);
+
+  mem1 = mem2;
+  CHECK(mem1 == mem2);
+
+  mem1 = std::move(mem2);
+  CHECK(mem1 != mem2);
 }
