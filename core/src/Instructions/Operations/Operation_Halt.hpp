@@ -5,7 +5,8 @@
 namespace emulator::core::instructions::operations {
   class Halt : public bases::Base {
   public:
-    void execute(const InstructionData&, ProcessorState&) const {
+    void execute(const InstructionData& data, ProcessorState& state) const {
+      advancePC(data, state);
       throw exceptions::Halt{};
     }
   };

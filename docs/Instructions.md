@@ -291,7 +291,10 @@ Branches can not be used with registers as source for the label.
 ```
 HALT
 ```
-Terminates the program.
+Terminates the program and returns control to the emulator.
+The program can be resumed afterwards as if the `HALT` never happened,
+i.e. the whole processors state is guaranteed to not have changed, except the
+cycle count and the program counter which were incremented.
 
 ### Cycle Count Since Startup
 ```

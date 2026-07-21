@@ -1,10 +1,16 @@
 #include "Instruction.hpp"
+#include "Exceptions.hpp"
 
 namespace emulator::core::instructions {
   void Instruction::execute(ProcessorState& state) const {
-    std::visit([&](auto& operation) {
-      operation.execute(m_data, state);
-    }, m_instruction);
+    try {
+      std::visit([&](auto& operation) {
+        operation.execute(m_data, state);
+      }, m_instruction);
+    } catch (const exceptions::Halt&) {
+      ++state.cycle_count;
+      throw;
+    }
     ++state.cycle_count;
   }
 
