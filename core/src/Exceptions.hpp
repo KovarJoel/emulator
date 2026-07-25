@@ -1,32 +1,81 @@
 #pragma once
 
-#include <stdexcept>
+#include <exception>
+#include <source_location>
+#include <string>
+#include <format>
+
+#ifndef EMULATOR_CORE_EXCEPTIONS_USE_LOCATION
+#define EMULATOR_CORE_EXCEPTIONS_USE_LOCATION 0
+#endif
+
+#define EMULATOR_CORE_EXCEPTION_CREATE(Name, Base)                            \
+  struct Name : Base {                                                        \
+    Name(                                                                     \
+      const std::source_location& location = std::source_location::current(), \
+      const std::string& name = #Name                                         \
+    ) : Base{ location, name } {}                                             \
+  }
 
 namespace emulator::core::exceptions {
-  struct Base : public std::exception {};
+  struct Base : std::exception {
+    Base(
+      [[maybe_unused]] const std::source_location& location = std::source_location::current(),
+      const std::string& name = "Unknown"
+    ) {
+#if EMULATOR_CORE_EXCEPTIONS_USE_LOCATION
+      m_information = std::format(
+        "{} [emulator::core::exceptions] at {}",
+        name,
+        locationToString(location)
+      );
+#else
+      m_information = std::format(
+        "{} [emulator::core::exceptions]",
+        name
+      );
+#endif
+    }
+    
+    const char* what() const noexcept override {
+      return m_information.c_str();
+    }
+
+  protected:
+    static std::string locationToString(const std::source_location& location) {
+      return std::format("{}:{}:{} in function {}",
+        location.file_name(), location.line(), location.column(), location.function_name()
+      );
+    }
+
+  protected:
+    std::string m_information{};
+  };
   
-  struct InvalidMemoryAccess : public Base {};
-  struct InvalidReadAccess : public InvalidMemoryAccess{};
-  struct InvalidWriteAccess : public InvalidMemoryAccess{};
-  struct InvalidExecuteAccess : public InvalidMemoryAccess{};
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidMemoryAccess, Base);
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidReadAccess, InvalidMemoryAccess);
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidWriteAccess, InvalidMemoryAccess);
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidExecuteAccess, InvalidMemoryAccess);
 
-  struct InvalidOperation : public Base {};
-  struct InvalidOperationData : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidOperation, Base );
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidOperationData, Base);
   
-  struct InvalidAddressignMode : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidAddressignMode, Base);
 
-  struct InvalidOperationWidth : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidOperationWidth, Base);
 
-  struct StackOverflow : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(StackOverflow, Base);
 
-  struct InvalidBinary : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(InvalidBinary, Base);
 
-  struct DivideByZero : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(DivideByZero, Base);
 
-  struct Halt : public Base{};
+  EMULATOR_CORE_EXCEPTION_CREATE(Halt, Base);
 
-  struct BadRegisterOrImmediateCast : public Base {};
-  struct BadRegisterOrImmediateValue : public Base {};
+  EMULATOR_CORE_EXCEPTION_CREATE(BadRegisterOrImmediateCast, Base );
+  EMULATOR_CORE_EXCEPTION_CREATE(BadRegisterOrImmediateValue, Base );
   
-  struct BadInstructionValue : public Base {};
+  EMULATOR_CORE_EXCEPTION_CREATE(BadInstructionValue, Base);
 }
+
+#undef EMULATOR_CORE_EXCEPTION_CREATE
