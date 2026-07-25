@@ -40,13 +40,15 @@ namespace emulator::core::instructions {
 
   class Instruction {
   public:
+    Instruction() = default;
+    Instruction(const InstructionData& data);
     void setData(const InstructionData& data);
     const InstructionData& getData() const;
 
     void execute(ProcessorState& state) const;
 
   private:
-    InstructionData m_data;
-    internal::InstructionVariant m_instruction;
+    InstructionData m_data{};
+    internal::InstructionVariant m_instruction{};
   };
 }

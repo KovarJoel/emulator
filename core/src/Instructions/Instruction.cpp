@@ -2,6 +2,9 @@
 #include "Exceptions.hpp"
 
 namespace emulator::core::instructions {
+  Instruction::Instruction(const InstructionData& data)
+    : m_data{ data }, m_instruction{ internal::opcodeToInstructionVariant(m_data.getOpcode()) } {}
+
   void Instruction::execute(ProcessorState& state) const {
     try {
       std::visit([&](auto& operation) {
