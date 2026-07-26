@@ -8,7 +8,6 @@
 #include "Instructions/RegisterOrImmediate.hpp"
 #include "ProcessorState.hpp"
 #include "Register.hpp"
-#include "catch2/internal/catch_source_line_info.hpp"
 
 using namespace emulator::core;
 using namespace emulator::core::instructions;
