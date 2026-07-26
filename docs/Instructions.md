@@ -210,8 +210,6 @@ the MSB of `src1`, acting as a sign extension.
 
 **Carry Flag:** Set to the last bit shifted out of the destination register.
 
-**Overflow Flag:** Set iff the MSB of the result and the MSB of `src1` are different.
-
 ## Bitwise Logical Operations
 ### And
 ```
@@ -269,7 +267,7 @@ Branches can not be used with registers as source for the label.
 | BE          | Branch if equal (ZF=1)
 | BEZ         | Branch if equal zero (ZF=1), pseudoinstruction
 | BNE         | Branch if not equal (ZF=0)
-| BNEZ        | Branch if not eual zero (ZF=1), pseudoinstruction
+| BNEZ        | Branch if not eual zero (ZF=0), pseudoinstruction
 | **signed:**
 | BGT         | Branch if greater than (ZF=0 and SF=OF)
 | BLT         | Branch if less than (ZF=0 and SF!=OF)
@@ -379,5 +377,4 @@ Equivalent to `SUB r0, src1, src2`.
 ```
 SLA dest, src1, src2
 ```
-Multiplies the value in `src1` by 2.
 Equivalent to `SLL dest, src1, src2`.
