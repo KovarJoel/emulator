@@ -72,7 +72,6 @@ namespace emulator::core::instructions::operations {
     }
 
     updateFlagsZeroAndSign(data, state);
-    updateFlagOverflow(state, src, dest);
 
     advancePC(data, state);
   }
