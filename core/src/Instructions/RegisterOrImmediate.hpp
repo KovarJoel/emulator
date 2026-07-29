@@ -2,7 +2,6 @@
 
 #include "RegisterBank.hpp"
 
-#include <array>
 #include <cstdint>
 
 namespace emulator::core::instructions {
@@ -25,6 +24,8 @@ namespace emulator::core::instructions {
     void setImmediateValue(uint32_t immediate_value);
 
     bool isValid() const;
+
+    bool operator==(const RegisterOrImmediate& other) const = default;
 
   private:
     SourceMode m_mode;
