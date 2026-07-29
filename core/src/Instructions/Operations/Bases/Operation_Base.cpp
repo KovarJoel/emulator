@@ -1,15 +1,16 @@
 #include "Operation_Base.hpp"
+#include "Register.hpp"
 
 namespace emulator::core::instructions::operations::bases {
-  void Base::updateFlagsZeroAndSign(const InstructionData& data, ProcessorState& state) const {
+  void Base::updateFlagsZeroAndSign(uint32_t result, ProcessorState& state) const {
     state.registers.getFLAGS().setBit(
       Register::FlagIndex::Zero,
-      state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0
+      result == 0
     );
     
     state.registers.getFLAGS().setBit(
       Register::FlagIndex::Sign,
-      state.registers[data.getDestRegisterAddr()].getBit(Register::INDEX_MSB)
+      result & (1u << Register::INDEX_MSB)
     );
   }
 

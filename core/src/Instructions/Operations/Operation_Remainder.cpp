@@ -15,7 +15,7 @@ namespace emulator::core::instructions::operations {
 
     state.registers[data.getDestRegisterAddr()].set(result);
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(result, state);
     advancePC(data, state);
   }
 
@@ -33,7 +33,7 @@ namespace emulator::core::instructions::operations {
 
     state.registers.getFLAGS().setBit(
       Register::FlagIndex::Zero,
-      state.registers[data.getDestRegisterAddr()].get<uint32_t>() == 0
+      result == 0
     );
     
     advancePC(data, state);

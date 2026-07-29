@@ -25,7 +25,7 @@ namespace emulator::core::instructions::operations {
       );
     }
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(dest, state);
     updateFlagOverflow(state, src, dest);
 
     advancePC(data, state);
@@ -46,7 +46,7 @@ namespace emulator::core::instructions::operations {
       );
     }
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(dest, state);
     updateFlagOverflow(state, src, dest);
 
     advancePC(data, state);
@@ -71,7 +71,7 @@ namespace emulator::core::instructions::operations {
       );
     }
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(dest, state);
 
     advancePC(data, state);
   }

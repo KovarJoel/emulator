@@ -2,32 +2,35 @@
 
 namespace emulator::core::instructions::operations {
   void And::execute(const InstructionData& data, ProcessorState& state) const {
-    state.registers[data.getDestRegisterAddr()].set(
+    const auto result =
       data.getSources()[0].getValue(state.registers) &
-      data.getSources()[1].getValue(state.registers)
-    );
+      data.getSources()[1].getValue(state.registers);
 
-    updateFlagsZeroAndSign(data, state);
+    state.registers[data.getDestRegisterAddr()].set(result);
+
+    updateFlagsZeroAndSign(result, state);
     advancePC(data, state);
   }
 
   void Or::execute(const InstructionData& data, ProcessorState& state) const {
-    state.registers[data.getDestRegisterAddr()].set(
+    const auto result = 
       data.getSources()[0].getValue(state.registers) |
-      data.getSources()[1].getValue(state.registers)
-    );
+      data.getSources()[1].getValue(state.registers);
+    
+    state.registers[data.getDestRegisterAddr()].set(result);
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(result, state);
     advancePC(data, state);
   }
 
   void Xor::execute(const InstructionData& data, ProcessorState& state) const {
-    state.registers[data.getDestRegisterAddr()].set(
+    const auto result = 
       data.getSources()[0].getValue(state.registers) ^
-      data.getSources()[1].getValue(state.registers)
-    );
+      data.getSources()[1].getValue(state.registers);
 
-    updateFlagsZeroAndSign(data, state);
+    state.registers[data.getDestRegisterAddr()].set(result);
+
+    updateFlagsZeroAndSign(result, state);
     advancePC(data, state);
   }
 }

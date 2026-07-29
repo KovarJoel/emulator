@@ -21,7 +21,7 @@ namespace emulator::core::instructions::operations {
       value1_signed != value2_signed && value1_signed != result_signed
     );
 
-    updateFlagsZeroAndSign(data, state);
+    updateFlagsZeroAndSign(result, state);
     advancePC(data, state);
   }
 }

@@ -31,7 +31,7 @@ namespace emulator::core::instructions::operations::bases {
       return word & (1u << bit);
     }
     
-    void updateFlagsZeroAndSign(const InstructionData& data, ProcessorState& state) const;
+    void updateFlagsZeroAndSign(uint32_t result, ProcessorState& state) const;
     void advancePC(const InstructionData& data, ProcessorState& state) const;
   };
 }
