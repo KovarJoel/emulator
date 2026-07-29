@@ -2,10 +2,10 @@
 
 #include "Operations.hpp"
 #include "RegisterOrImmediate.hpp"
-#include "ProcessorState.hpp"
 
 #include <array>
 #include <cstdint>
+#include <vector>
 
 namespace emulator::core::instructions {
   class InstructionData {
@@ -35,9 +35,17 @@ namespace emulator::core::instructions {
     const std::array<RegisterOrImmediate, 2>& getSources() const;
 
     size_t getEncodingSize() const;
+    std::vector<std::byte> encode() const;
+
+    void decode(std::span<const std::byte> data);
+
+    bool operator==(const InstructionData& other) const = default;
     
   private:
     bool isValid() const;
+
+    static uint32_t decodeImmediate(std::span<const std::byte> data);
+    static Width decodeWidth(uint16_t remaining_data);
   
   private:
     Opcode m_opcode{};
