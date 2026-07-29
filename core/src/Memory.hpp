@@ -72,6 +72,10 @@ namespace emulator::core {
       std::memcpy(m_memory.get() + address, &value, sizeof(value));
     }
 
+    std::span<const std::byte> getRaw() const {
+      return { m_memory.get(), RAM_SIZE };
+    }
+
     void loadProgram(std::span<const std::byte> binary);
     void loadProgram(const std::filesystem::path& file_path);
 
