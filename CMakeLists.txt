@@ -22,14 +22,14 @@ FetchContent_MakeAvailable(
 
 add_library(core STATIC)
 
-file(GLOB_RECURSE SRC_CPP_FILES core/src/*.cpp)
+file(GLOB_RECURSE SRC_CPP_FILES src/core/*.cpp)
 
 target_sources(core PRIVATE
   ${SRC_CPP_FILES}
 )
 
 target_include_directories(core PUBLIC
-  core/src
+  src/core
 )
 
 target_compile_options(core PRIVATE
