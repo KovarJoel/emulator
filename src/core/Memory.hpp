@@ -4,6 +4,7 @@
 #include "Exceptions.hpp"
 #include "Types.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
