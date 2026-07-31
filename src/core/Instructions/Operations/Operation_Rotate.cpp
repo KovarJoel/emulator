@@ -2,7 +2,7 @@
 
 #include <bit>
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
     void RotateLeft::execute(const InstructionData& data, ProcessorState& state) const {
       const auto result = std::rotl(
         data.getSources()[0].getValue(state.registers),

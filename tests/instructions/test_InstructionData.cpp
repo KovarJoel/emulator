@@ -4,8 +4,8 @@
 #include "Instructions/Operations.hpp"
 #include "Instructions/RegisterOrImmediate.hpp"
 
-using namespace emulator::core;
-using namespace emulator::core::instructions;
+using namespace core;
+using namespace core::instructions;
 
 TEST_CASE("Encoding register only", "[Instructions::InstructionData]") {
   using enum Opcode;

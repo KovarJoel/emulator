@@ -2,7 +2,7 @@
 
 #include "Register.hpp"
 
-using namespace emulator::core;
+using namespace core;
 
 TEST_CASE("Truncation", "[Register]") {
   Register reg;

@@ -17,7 +17,7 @@
     ) : Base{ location, name } {}                                             \
   }
 
-namespace emulator::core::exceptions {
+namespace core::exceptions {
   struct Base : std::exception {
     Base(
       [[maybe_unused]] const std::source_location& location = std::source_location::current(),
@@ -25,13 +25,13 @@ namespace emulator::core::exceptions {
     ) {
 #if EMULATOR_CORE_EXCEPTIONS_USE_LOCATION
       m_information = std::format(
-        "{} [emulator::core::exceptions] at {}",
+        "{} [core::exceptions] at {}",
         name,
         locationToString(location)
       );
 #else
       m_information = std::format(
-        "{} [emulator::core::exceptions]",
+        "{} [core::exceptions]",
         name
       );
 #endif

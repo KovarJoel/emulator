@@ -8,7 +8,7 @@
 #include <functional>
 #include <span>
 
-namespace emulator::core {
+namespace core {
   class Processor {
   public:
     void loadProgram(std::span<const std::byte> binary);

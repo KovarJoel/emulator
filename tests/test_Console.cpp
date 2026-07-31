@@ -4,7 +4,7 @@
 
 #include <type_traits>
 
-using namespace emulator::core;
+using namespace core;
 
 TEST_CASE("Sizes", "[Memory::Mappings::Console]") {
   STATIC_CHECK(Console::WIDTH == 128);

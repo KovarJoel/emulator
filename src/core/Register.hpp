@@ -7,7 +7,7 @@
 #include <cstring>
 #include <utility>
 
-namespace emulator::core {
+namespace core {
   class Register {
   public:
     enum class FlagIndex {

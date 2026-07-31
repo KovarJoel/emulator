@@ -19,7 +19,7 @@
 #include "Operations/Operation_Store.hpp"
 #include "Operations/Operation_Subtract.hpp"
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   namespace internal {
     using InstructionVariant = std::variant<
       #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CLASS(mnemonic, type, class, ...) operations::class,

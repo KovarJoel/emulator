@@ -1,7 +1,7 @@
 #include "Operation_Base.hpp"
 #include "Register.hpp"
 
-namespace emulator::core::instructions::operations::bases {
+namespace core::instructions::operations::bases {
   void Base::updateFlagsZeroAndSign(uint32_t result, ProcessorState& state) const {
     state.registers.getFLAGS().setBit(
       Register::FlagIndex::Zero,

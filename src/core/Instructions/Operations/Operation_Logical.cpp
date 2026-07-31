@@ -1,6 +1,6 @@
 #include "Operation_Logical.hpp"
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   void And::execute(const InstructionData& data, ProcessorState& state) const {
     const auto result =
       data.getSources()[0].getValue(state.registers) &

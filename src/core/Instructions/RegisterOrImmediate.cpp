@@ -2,7 +2,7 @@
 
 #include "Exceptions.hpp"
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   RegisterOrImmediate::RegisterOrImmediate()
     : m_mode{ SourceMode::Register }, m_value{ 0 } {
     if (!isValid()) {

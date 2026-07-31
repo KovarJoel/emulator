@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace emulator::core::instructions::operations::bases {
+namespace core::instructions::operations::bases {
   class Base {
   public:
     void execute(const InstructionData&, ProcessorState&) const {

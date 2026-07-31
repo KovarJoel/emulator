@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-using namespace emulator::core;
+using namespace core;
 
 namespace {
   constexpr std::array<char, 3 * Memory::PAGE_SIZE> valid_binary{

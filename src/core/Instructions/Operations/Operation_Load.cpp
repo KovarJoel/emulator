@@ -2,7 +2,7 @@
 
 #include "Exceptions.hpp"
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   void Load::execute(const InstructionData& data, ProcessorState& state) const {
     const uint32_t address = calculateAddress(data, state);
 

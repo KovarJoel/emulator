@@ -4,7 +4,7 @@
 #include "Instructions/Instruction.hpp"
 #include "Instructions/InstructionData.hpp"
 
-namespace emulator::core {
+namespace core {
   void Processor::loadProgram(std::span<const std::byte> binary) {
     m_state.memory.loadProgram(binary);
   }

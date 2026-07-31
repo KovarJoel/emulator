@@ -2,7 +2,7 @@
 
 #include "Bases/Operation_Base.hpp"
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   class Cycle : public bases::Base {
   public:
     void execute(const InstructionData& data, ProcessorState& state) const {

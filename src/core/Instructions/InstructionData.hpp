@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   class InstructionData {
   public:
     enum class Width {

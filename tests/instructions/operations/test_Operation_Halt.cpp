@@ -8,9 +8,9 @@
 #include "ProcessorState.hpp"
 #include "RegisterBank.hpp"
 
-using namespace emulator::core;
-using namespace emulator::core::instructions;
-using namespace emulator::core::instructions::operations;
+using namespace core;
+using namespace core::instructions;
+using namespace core::instructions::operations;
 
 namespace {
   Instruction generateHalt() {

@@ -4,7 +4,7 @@
 
 #include <array>
 
-namespace emulator::core {
+namespace core {
   class RegisterBank {
   public:
     constexpr static size_t REGISTER_COUNT = 16;

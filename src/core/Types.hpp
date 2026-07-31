@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <variant>
 
-namespace emulator::core {
+namespace core {
   template <typename T>
   concept EmulatorType =
     std::same_as<T, uint8_t> ||

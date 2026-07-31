@@ -13,7 +13,7 @@
 #include <memory>
 #include <span>
 
-namespace emulator::core {
+namespace core {
   class Memory {
   public:
     constexpr static size_t PAGE_SIZE{ 0x1000 };

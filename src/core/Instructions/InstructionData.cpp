@@ -6,7 +6,7 @@
 #include "RegisterBank.hpp"
 #include <cstdint>
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   InstructionData::InstructionData()
     : m_opcode{ Opcode::ADD }, m_width{ Width::Word }, m_dest_register_addr{ 0 }, m_sources{} {
     // equivalent to NOP (ADD r0, r0, r0)

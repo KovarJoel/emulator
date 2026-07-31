@@ -1,6 +1,6 @@
 #include "Operation_Shift.hpp"
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   namespace {
     void updateFlagOverflow(ProcessorState& state, uint32_t src, uint32_t dest) {
       state.registers.getFLAGS().setBit(

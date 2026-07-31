@@ -2,7 +2,7 @@
 
 #include <limits>
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   void Multiply::execute(const InstructionData& data, ProcessorState& state) const {
     const uint64_t value1 = data.getSources()[0].getValue(state.registers);      
     const uint64_t value2 = data.getSources()[1].getValue(state.registers);      

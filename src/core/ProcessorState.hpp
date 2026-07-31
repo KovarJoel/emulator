@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace emulator::core {
+namespace core {
   struct ProcessorState {
     Memory memory{};
     RegisterBank registers{};

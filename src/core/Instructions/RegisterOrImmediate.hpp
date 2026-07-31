@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   class RegisterOrImmediate {
   public:
     enum class SourceMode {

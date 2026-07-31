@@ -2,7 +2,7 @@
 
 #include "Exceptions.hpp"
 
-namespace emulator::core::instructions::operations {
+namespace core::instructions::operations {
   void Remainder::execute(const InstructionData& data, ProcessorState& state) const {
     const auto value1 = std::bit_cast<int32_t>(data.getSources()[0].getValue(state.registers));
     const auto value2 = std::bit_cast<int32_t>(data.getSources()[1].getValue(state.registers));

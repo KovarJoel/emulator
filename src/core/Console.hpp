@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace emulator::core {
+namespace core {
   class Console {
   public:
     constexpr static size_t HEIGHT{ 42 };

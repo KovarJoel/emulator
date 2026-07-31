@@ -4,7 +4,7 @@
 
 #include <array>
 
-namespace emulator::core::instructions::operations::bases {
+namespace core::instructions::operations::bases {
   uint32_t BaseMemory::calculateAddress(const InstructionData& data, const ProcessorState& state) const {
     const auto sources = data.getSources();
     const std::array<uint32_t, 2> values = {

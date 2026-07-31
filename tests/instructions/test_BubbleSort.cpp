@@ -11,8 +11,8 @@
 #include <cstddef>
 #include <algorithm>
 
-using namespace emulator::core;
-using namespace emulator::core::instructions;
+using namespace core;
+using namespace core::instructions;
 
 namespace {
   constexpr uint32_t BASE_ADDRESS = 0x20000;

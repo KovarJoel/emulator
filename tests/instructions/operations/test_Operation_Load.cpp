@@ -9,8 +9,8 @@
 #include "ProcessorState.hpp"
 #include "Register.hpp"
 
-using namespace emulator::core;
-using namespace emulator::core::instructions;
+using namespace core;
+using namespace core::instructions;
 
 namespace {
   constexpr uint32_t FIRST_VALID_ADDRESS = 0x1000;

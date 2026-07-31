@@ -4,7 +4,7 @@
 #include <iterator>
 #include <vector>
 
-namespace emulator::core {
+namespace core {
   Memory::Memory()
     : m_memory{ new (MAX_ALIGNMENT) std::byte[RAM_SIZE]{} },
       m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },

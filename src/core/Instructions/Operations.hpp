@@ -44,7 +44,7 @@
   X(HALT,   OpcodeType::Other,        Halt,                         )\
   X(CYCL,   OpcodeType::Other,        Cycle,                        )
 
-namespace emulator::core::instructions {
+namespace core::instructions {
   enum class OpcodeType {
     Memory,
     Arithmetic,
