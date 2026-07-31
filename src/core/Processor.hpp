@@ -4,8 +4,9 @@
 #include "ProcessorState.hpp"
 
 #include <cstddef>
-#include <span>
 #include <filesystem>
+#include <functional>
+#include <span>
 
 namespace emulator::core {
   class Processor {
@@ -13,7 +14,7 @@ namespace emulator::core {
     void loadProgram(std::span<const std::byte> binary);
     void loadProgram(const std::filesystem::path& file_path);
 
-    void run();
+    void run(std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)> callback = [](auto&, auto&){});
 
     auto& getState(this auto&& self) {
       return self.m_state;

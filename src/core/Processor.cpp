@@ -13,7 +13,7 @@ namespace emulator::core {
     m_state.memory.loadProgram(file_path);
   }
 
-  void Processor::run() {
+  void Processor::run(std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)> callback) {
     initializeRegisters();
 
     instructions::Instruction instruction;
@@ -21,8 +21,8 @@ namespace emulator::core {
     try {
       while (true) {
         instruction.setData(fetchAndDecode());
+        callback(m_state, instruction.getData());
         instruction.execute(m_state);
-        ++m_state.cycle_count;
       }
     } catch(const exceptions::Halt& ex) {}
   }
