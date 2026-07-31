@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Instructions/InstructionData.hpp"
-#include "Instructions/Operations.hpp"
-#include "Instructions/RegisterOrImmediate.hpp"
+#include "core/Instructions/InstructionData.hpp"
+#include "core/Instructions/Operations.hpp"
+#include "core/Instructions/RegisterOrImmediate.hpp"
 
 using namespace core;
 using namespace core::instructions;

@@ -1,6 +1,6 @@
 #include "Operation_Base_Memory.hpp"
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 #include <array>
 

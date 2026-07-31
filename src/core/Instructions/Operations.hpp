@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 #include <cstdint>
 #include <string_view>

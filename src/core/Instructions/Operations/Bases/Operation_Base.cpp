@@ -1,5 +1,5 @@
 #include "Operation_Base.hpp"
-#include "Register.hpp"
+#include "core/Register.hpp"
 
 namespace core::instructions::operations::bases {
   void Base::updateFlagsZeroAndSign(uint32_t result, ProcessorState& state) const {

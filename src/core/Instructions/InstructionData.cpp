@@ -1,9 +1,10 @@
 #include "InstructionData.hpp"
 
-#include "Exceptions.hpp"
-#include "Instructions/Operations.hpp"
-#include "Instructions/RegisterOrImmediate.hpp"
-#include "RegisterBank.hpp"
+#include "core/Exceptions.hpp"
+#include "core/Instructions/Operations.hpp"
+#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/RegisterBank.hpp"
+
 #include <cstdint>
 
 namespace core::instructions {

@@ -1,6 +1,6 @@
 #include "Operation_Divide.hpp"
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 namespace core::instructions::operations {
   void Divide::execute(const InstructionData& data, ProcessorState& state) const {

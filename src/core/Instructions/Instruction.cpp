@@ -1,5 +1,5 @@
 #include "Instruction.hpp"
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 namespace core::instructions {
   Instruction::Instruction(const InstructionData& data)

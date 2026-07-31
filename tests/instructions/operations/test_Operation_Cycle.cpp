@@ -1,9 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Instructions/Instruction.hpp"
-#include "Instructions/InstructionData.hpp"
-#include "ProcessorState.hpp"
-#include "Register.hpp"
+#include "core/Instructions/Instruction.hpp"
+#include "core/Instructions/InstructionData.hpp"
+#include "core/ProcessorState.hpp"
+#include "core/Register.hpp"
 
 #include <cstdint>
 

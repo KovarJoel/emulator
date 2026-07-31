@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ProcessorState.hpp"
-#include "Instructions/InstructionData.hpp"
+#include "core/ProcessorState.hpp"
+#include "core/Instructions/InstructionData.hpp"
 
 #include <cstdint>
 #include <cstddef>

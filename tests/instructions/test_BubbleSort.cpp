@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Instructions/RegisterOrImmediate.hpp"
-#include "Processor.hpp"
-#include "Instructions/InstructionData.hpp"
+#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/Processor.hpp"
+#include "core/Instructions/InstructionData.hpp"
 
 #include <array>
 #include <limits>

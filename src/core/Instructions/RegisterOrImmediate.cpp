@@ -1,6 +1,6 @@
 #include "RegisterOrImmediate.hpp"
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 namespace core::instructions {
   RegisterOrImmediate::RegisterOrImmediate()

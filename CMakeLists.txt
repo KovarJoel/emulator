@@ -30,7 +30,7 @@ target_sources(core PRIVATE
 )
 
 target_include_directories(core PUBLIC
-  src/core
+  src
 )
 
 target_compile_options(core PRIVATE

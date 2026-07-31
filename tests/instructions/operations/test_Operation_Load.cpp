@@ -1,13 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 
-#include "Exceptions.hpp"
-#include "Instructions/Instruction.hpp"
-#include "Instructions/InstructionData.hpp"
-#include "Instructions/Operations.hpp"
-#include "Instructions/RegisterOrImmediate.hpp"
-#include "ProcessorState.hpp"
-#include "Register.hpp"
+#include "core/Exceptions.hpp"
+#include "core/Instructions/Instruction.hpp"
+#include "core/Instructions/InstructionData.hpp"
+#include "core/Instructions/Operations.hpp"
+#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/ProcessorState.hpp"
+#include "core/Register.hpp"
 
 using namespace core;
 using namespace core::instructions;

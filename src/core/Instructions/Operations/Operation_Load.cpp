@@ -1,6 +1,6 @@
 #include "Operation_Load.hpp"
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 namespace core::instructions::operations {
   void Load::execute(const InstructionData& data, ProcessorState& state) const {

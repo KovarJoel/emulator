@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Memory.hpp"
-#include "Exceptions.hpp"
+#include "core/Memory.hpp"
+#include "core/Exceptions.hpp"
 
 #include <array>
 #include <bit>

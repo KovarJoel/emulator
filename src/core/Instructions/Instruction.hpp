@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
+#include "core/ProcessorState.hpp"
 #include "InstructionData.hpp"
-#include "ProcessorState.hpp"
 #include "Operations.hpp"
 
 #include "Operations/Operation_Add.hpp"

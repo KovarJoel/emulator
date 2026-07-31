@@ -1,6 +1,6 @@
 #include "Operation_Store.hpp"
 
-#include "Exceptions.hpp"
+#include "core/Exceptions.hpp"
 
 namespace core::instructions::operations {
   void Store::execute(const InstructionData& data, ProcessorState& state) const {

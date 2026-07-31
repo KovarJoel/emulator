@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RegisterBank.hpp"
+#include "core/RegisterBank.hpp"
 
 #include <cstdint>
 
