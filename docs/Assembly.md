@@ -45,7 +45,7 @@ Example program:
 ```
 segment: code
 
-; prints the digits from 0-9 to the console
+# prints the digits from 0-9 to the console
 function main:
     MOV   r1, 48
     MOV   r2, 0xFF

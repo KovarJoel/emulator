@@ -4,13 +4,6 @@ The following addressing modes are supported for source operands:
 - register
 - immediate up to 24 bits
 
-Immediates are assumed to be in decimal representation. For hexadecimal prefix with `0x...`, for
-octal prefix with `0o...`, for binary prefix with `0b...`.
-Immediates are always interpreted as unsigned and therefore zero extended.
-To use negative values for immediates, load them into a register as follows: `SUB dest, r0, imm`.
-
-Mnemonics, type specifiers, hexadecimal digits and register names are case insensitive. 
-
 The `FLAGS` register may observe modifications by any instruction.
 Conditional branch instructions must always be placed immediately after a comparison,
 or after another instruction modifying the `FLAGS` register.
