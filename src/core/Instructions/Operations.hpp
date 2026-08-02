@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <string_view>
-#include <variant>
 
 // mnemonic, operation type, operation class, init
 #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(X) \
@@ -86,12 +85,14 @@ namespace core::instructions {
         EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
       #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE
     }
+    throw exceptions::InvalidOperation{};
   }
 
   constexpr Opcode opcodeFromString(std::string_view string) {
     #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_IF(mnemonic, ...) if (string == #mnemonic) return Opcode::mnemonic;
       EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_IF)
     #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_IF
+    throw exceptions::InvalidOperation{};
   }
 
   constexpr std::string_view opcodeToName(Opcode code) {
@@ -100,5 +101,6 @@ namespace core::instructions {
         EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
       #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE
     }
+    throw exceptions::InvalidOperation{};
   }
 }
