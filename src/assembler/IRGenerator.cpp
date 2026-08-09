@@ -42,6 +42,7 @@ namespace assembler {
           ++i;
         }
         else {
+          --i;
           break;
         }
       }
