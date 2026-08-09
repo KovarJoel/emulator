@@ -92,6 +92,6 @@ instructions. This specifier will apply to all elements in the initializer.
 Example:
 ```
 segment: data
-bytes.B = 0xEF, 0xBE, 0xAD, 0xDE
-same_word = 0xDEADBEEF
+  bytes.B = 0xEF, 0xBE, 0xAD, 0xDE
+  same_word = 0xDEADBEEF
 ```
