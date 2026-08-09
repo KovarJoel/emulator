@@ -3,6 +3,7 @@
 #include "AssemblerError.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
+#include "IRGenerator.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -30,7 +31,10 @@ namespace assembler {
     const auto& lexer_tokens = lexer.run();
 
     Parser parser{ m_data };
-    [[maybe_unused]] const auto& parser_tokens = parser.run(lexer_tokens);
+    const auto& parser_tokens = parser.run(lexer_tokens);
+
+    IRGenerator ir_gen{ m_data };
+    [[maybe_unused]] const auto& ir = ir_gen.run(parser_tokens);
   }
 
   void Assembler::readFile() {
