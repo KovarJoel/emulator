@@ -23,10 +23,10 @@ FetchContent_MakeAvailable(
 
 add_library(core STATIC)
 
-file(GLOB_RECURSE SRC_CPP_FILES src/core/*.cpp)
+file(GLOB_RECURSE SRC_CORE_CPP_FILES src/core/*.cpp)
 
 target_sources(core PRIVATE
-  ${SRC_CPP_FILES}
+  ${SRC_CORE_CPP_FILES}
 )
 
 target_include_directories(core PUBLIC
@@ -34,6 +34,24 @@ target_include_directories(core PUBLIC
 )
 
 target_compile_options(core PRIVATE
+  -Wall -Wextra -Werror -pedantic -g -O0
+)
+
+##################################
+
+add_executable(assembler)
+
+file(GLOB_RECURSE SRC_ASSEMBLER_CPP_FILES src/assembler/*.cpp)
+
+target_sources(assembler PRIVATE
+  ${SRC_ASSEMBLER_CPP_FILES}
+)
+
+target_link_libraries(assembler PRIVATE
+  core
+)
+
+target_compile_options(assembler PRIVATE
   -Wall -Wextra -Werror -pedantic -g -O0
 )
 
