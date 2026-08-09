@@ -57,12 +57,22 @@ target_compile_options(assembler PRIVATE
 
 ##################################
 
-# add_executable(emulator main.cpp)
-# 
-# target_link_libraries(emulator PRIVATE
-#   core
-# )
-# 
+add_executable(emulator)
+
+file(GLOB_RECURSE SRC_EMULATOR_CPP_FILES src/emulator/*.cpp)
+
+target_sources(emulator PRIVATE
+  ${SRC_EMULATOR_CPP_FILES}
+)
+
+target_link_libraries(emulator PRIVATE
+  core
+)
+
+target_compile_options(core PRIVATE
+  -Wall -Wextra -Werror -pedantic -g -O0
+)
+
 # ##################################
 
 include(CTest)
