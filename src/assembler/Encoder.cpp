@@ -120,15 +120,12 @@ namespace assembler {
           const auto func_it = std::find_if(m_ir_data.functions.begin(), m_ir_data.functions.end(), [&branch_name](const auto& f) {
             return f.name == branch_name;
           });
-          
-          if (func_it == m_ir_data.functions.end()) {
-            assert(false);
-          }
+          assert(func_it != m_ir_data.functions.end());
 
           sources[i].setImmediateValue(func_it->address);
+        } else {
+          sources[i].setImmediateValue(branch_it->address);
         }
-
-        sources[i].setImmediateValue(branch_it->address);
       }
       else {
         assert(!"invalid variant alternative");
