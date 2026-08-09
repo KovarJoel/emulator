@@ -57,8 +57,10 @@ namespace assembler {
     IRGenerator_MissingMain,
     IRGenerator_UndefinedBranch,
     IRGenerator_ShaddowingBranch,
+    IRGenerator_VoidBranch,
     IRGenerator_DuplicateBranch,
     IRGenerator_DuplicateFunction,
+    IRGenerator_EmptyFunction,
   };
 
   struct Error {

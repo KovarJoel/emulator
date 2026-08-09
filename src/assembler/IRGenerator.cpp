@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <variant>
+#include <algorithm>
 
 namespace assembler {
   IRGenerator::IRGenerator(const AssemblerData& assembler_data)
@@ -11,6 +12,8 @@ namespace assembler {
   const IRGenerator::Data& IRGenerator::run(std::span<const Parser::Token> parser_tokens) {
     m_data = {};
     m_function_names.clear();
+    m_branches.clear();
+    m_branch_targets.clear();
     m_parser_tokens = parser_tokens;
 
     generateFunctions();
@@ -25,21 +28,28 @@ namespace assembler {
         continue;
       }
 
+      const size_t function_label_index = i;
+
       Function function{};
       function.name = std::get<Parser::FunctionLabel>(m_parser_tokens[i].token).label;
       updateFunctionNames(m_parser_tokens[i]);
       ++i;
 
+      size_t last_branch_index{};
       while (true) {
         if (std::holds_alternative<Parser::BranchLabel>(m_parser_tokens[i].token)) {
           Branch branch{};
           branch.name = std::get<Parser::BranchLabel>(m_parser_tokens[i].token).label;
+          m_branches[function.name].push_back(m_parser_tokens[i]);
           branch.instruction_id = function.instructions.size();
+
+          last_branch_index = i;
+
           function.branches.push_back(std::move(branch));
           ++i;
         }
         else if (std::holds_alternative<Parser::Mnemonic>(m_parser_tokens[i].token)) {
-          function.instructions.push_back(getInstruction(i));
+          function.instructions.push_back(getInstruction(function, i));
         }
         else if (std::holds_alternative<Parser::NewLine>(m_parser_tokens[i].token)) {
           ++i;
@@ -48,6 +58,27 @@ namespace assembler {
           --i;
           break;
         }
+
+      }
+
+      if (!function.branches.empty() && function.branches.back().instruction_id == function.instructions.size()) {
+        throw Error {
+          ErrorType::IRGenerator_VoidBranch,
+          m_assembler_data.input_file_path,
+          m_assembler_data.lines[m_parser_tokens[last_branch_index].line],
+          m_parser_tokens[last_branch_index].line + 1,
+          m_parser_tokens[last_branch_index].column + 1
+        };
+      }
+
+      if (function.instructions.empty()) {
+        throw Error{
+          ErrorType::IRGenerator_EmptyFunction,
+          m_assembler_data.input_file_path,
+          m_assembler_data.lines[m_parser_tokens[function_label_index].line],
+          m_parser_tokens[function_label_index].line + 1,
+          m_parser_tokens[function_label_index].column + 1
+        };
       }
 
       m_data.functions.push_back(std::move(function));
@@ -56,6 +87,8 @@ namespace assembler {
     if (!m_function_names.contains("main")) {
       throw Error{ ErrorType::IRGenerator_MissingMain, m_assembler_data.input_file_path };
     }
+
+    validateBranches();
   }
 
   void IRGenerator::updateFunctionNames(const Parser::Token& token) {
@@ -75,7 +108,7 @@ namespace assembler {
   }
 
 
-  IRGenerator::Instruction IRGenerator::getInstruction(size_t& index) {
+  IRGenerator::Instruction IRGenerator::getInstruction(const Function& function, size_t& index) {
     Instruction instruction{};
 
     instruction.opcode = std::get<Parser::Mnemonic>(m_parser_tokens[index].token).opcode;
@@ -89,12 +122,12 @@ namespace assembler {
       instruction.width = Instruction::Width::Word;
     }
 
-    instruction.operands = getOperands(index);
+    instruction.operands = getOperands(function, index);
 
     return instruction;
   }
 
-  std::vector<IRGenerator::Operand> IRGenerator::getOperands(size_t& index) {
+  std::vector<IRGenerator::Operand> IRGenerator::getOperands(const Function& function, size_t& index) {
     std::vector<IRGenerator::Operand> operands{};
     
     while (true) {
@@ -106,6 +139,7 @@ namespace assembler {
       }
       else if (std::holds_alternative<Parser::BranchTarget>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::BranchTarget>(m_parser_tokens[index].token));
+        m_branch_targets[function.name].push_back(m_parser_tokens[index]);
       }
       else {
         break;
@@ -140,6 +174,41 @@ namespace assembler {
       }
 
       m_data.variables.push_back(std::move(variable));
+    }
+  }
+
+  void IRGenerator::validateBranches() {
+    for (const auto& [func_name, branches] : m_branches) {
+      for (const auto& branch_token : branches) {
+        const auto& label = std::get<Parser::BranchLabel>(branch_token.token).label;
+        if (m_function_names.contains(label)) {
+          throw Error{
+            ErrorType::IRGenerator_ShaddowingBranch,
+            m_assembler_data.input_file_path,
+            m_assembler_data.lines[branch_token.line],
+            branch_token.line + 1,
+            branch_token.column + 1
+          };
+        }
+      }
+    }
+
+    for (const auto& [func_name, branch_targets] : m_branch_targets) {
+      for (const auto& branch_token : branch_targets) {
+        const auto& label = std::get<Parser::BranchTarget>(branch_token.token).label;
+
+        if (!m_function_names.contains(label) && !std::ranges::contains(m_branches[func_name], label, [](const auto& tk) {
+          return std::get<Parser::BranchLabel>(tk.token).label;
+        })) {
+          throw Error{
+            ErrorType::IRGenerator_UndefinedBranch,
+            m_assembler_data.input_file_path,
+            m_assembler_data.lines[branch_token.line],
+            branch_token.line + 1,
+            branch_token.column + 1
+          };
+        }
+      }
     }
   }
 }

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace assembler {
   class IRGenerator {
@@ -61,10 +62,11 @@ namespace assembler {
     void generateVariables();
 
     void updateFunctionNames(const Parser::Token& token);
+    void validateBranches();
 
   private:
-    std::vector<Operand> getOperands(size_t& index);
-    Instruction getInstruction(size_t& index);
+    std::vector<Operand> getOperands(const Function& function, size_t& index);
+    Instruction getInstruction(const Function& function, size_t& index);
 
   private:
     const AssemblerData& m_assembler_data;
@@ -73,5 +75,8 @@ namespace assembler {
     Data m_data{};
 
     std::unordered_set<std::string> m_function_names{};
+
+    std::unordered_map<std::string, std::vector<Parser::Token>> m_branches{};
+    std::unordered_map<std::string, std::vector<Parser::Token>> m_branch_targets{};
   };
 }

@@ -127,11 +127,17 @@ namespace assembler {
     case ErrorType::IRGenerator_ShaddowingBranch:
       std::println(out, "IRGenerator: Branch shaddows function label");
       break;
+    case ErrorType::IRGenerator_VoidBranch:
+      std::println(out, "IRGenerator: Branch is pointing to nothing, missing instruction afterwards");
+      break;
     case ErrorType::IRGenerator_DuplicateBranch:
       std::println(out, "IRGenerator: Branch with same label already exists elsewhere in function");
       break;
     case ErrorType::IRGenerator_DuplicateFunction:
       std::println(out, "IRGenerator: Function with same label already exists elsewhere");
+      break;
+    case ErrorType::IRGenerator_EmptyFunction:
+      std::println(out, "IRGenerator: Empfy function, expected instructions");
       break;
     }
     
