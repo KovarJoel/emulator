@@ -304,7 +304,7 @@ namespace assembler {
         parseRegisterOperand();
       }
       catch (const Error&) {
-        m_tokens.emplace_back(BranchLabel{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
+        m_tokens.emplace_back(BranchTarget{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
         m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
       }
     }
@@ -322,7 +322,7 @@ namespace assembler {
       parseNumber();
     }
     else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Identifier) {
-      m_tokens.emplace_back(BranchLabel{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
+      m_tokens.emplace_back(BranchTarget{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
       m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
     }
     else {

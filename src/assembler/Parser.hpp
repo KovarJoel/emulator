@@ -13,7 +13,6 @@
 #include <variant>
 #include <vector>
 #include <span>
-#include <print>
 
 namespace assembler {
   class Parser {
@@ -29,6 +28,10 @@ namespace assembler {
     };
     
     struct BranchLabel {
+      std::string label;
+    };
+
+    struct BranchTarget {
       std::string label;
     };
     
@@ -58,7 +61,7 @@ namespace assembler {
     struct EndOfFile {};
     
     using TokenVariant = std::variant<
-      Segment, FunctionLabel, BranchLabel, VariableName, Mnemonic,
+      Segment, FunctionLabel, BranchLabel, BranchTarget, VariableName, Mnemonic,
       WidthSpecifier, Register, Immediate, NewLine, EndOfFile
     >;
     
