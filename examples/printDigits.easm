@@ -1,0 +1,21 @@
+segment: code
+ 
+# prints the digits from 0-9 to the console
+function main:
+    ADD   r1, r0, 48        #     MOV   r1, 48
+    ADD   r2, r0, 0xFF      #     MOV   r2, 0xFF
+    ADD   r3, r0, 0         #     MOV   r3, 0
+
+  loop:
+    ST.B  0x1000(r3), r2
+    ST.B  0x1001(r3), r2
+    ST.B  0x1002(r3), r2
+    ST.B  0x1003(r3), r1
+    
+    ADD   r3, r3, 4
+    ADD   r1, r1, 1         #     INC   r1
+
+    SUB   r0, r1, 57        #     CMP   r1, 57
+    BLE   loop
+
+    HALT
