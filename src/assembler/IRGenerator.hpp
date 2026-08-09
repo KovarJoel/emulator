@@ -8,6 +8,7 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 namespace assembler {
   class IRGenerator {
@@ -59,6 +60,8 @@ namespace assembler {
     void generateFunctions();
     void generateVariables();
 
+    void updateFunctionNames(const Parser::Token& token);
+
   private:
     std::vector<Operand> getOperands(size_t& index);
     Instruction getInstruction(size_t& index);
@@ -68,5 +71,7 @@ namespace assembler {
 
     std::span<const Parser::Token> m_parser_tokens{};
     Data m_data{};
+
+    std::unordered_set<std::string> m_function_names{};
   };
 }

@@ -1,4 +1,5 @@
 #include "IRGenerator.hpp"
+#include "assembler/AssemblerError.hpp"
 
 #include <cassert>
 #include <variant>
@@ -9,6 +10,7 @@ namespace assembler {
 
   const IRGenerator::Data& IRGenerator::run(std::span<const Parser::Token> parser_tokens) {
     m_data = {};
+    m_function_names.clear();
     m_parser_tokens = parser_tokens;
 
     generateFunctions();
@@ -25,6 +27,7 @@ namespace assembler {
 
       Function function{};
       function.name = std::get<Parser::FunctionLabel>(m_parser_tokens[i].token).label;
+      updateFunctionNames(m_parser_tokens[i]);
       ++i;
 
       while (true) {
@@ -49,7 +52,28 @@ namespace assembler {
 
       m_data.functions.push_back(std::move(function));
     }
+
+    if (!m_function_names.contains("main")) {
+      throw Error{ ErrorType::IRGenerator_MissingMain, m_assembler_data.input_file_path };
+    }
   }
+
+  void IRGenerator::updateFunctionNames(const Parser::Token& token) {
+    const auto& new_name = std::get<Parser::FunctionLabel>(token.token).label;
+
+    if (m_function_names.contains(new_name)) {
+      throw Error {
+        ErrorType::IRGenerator_DuplicateFunction,
+        m_assembler_data.input_file_path,
+        m_assembler_data.lines[token.line],
+        token.line + 1,
+        token.column + 1
+      };
+    }    
+    
+    m_function_names.insert(new_name);
+  }
+
 
   IRGenerator::Instruction IRGenerator::getInstruction(size_t& index) {
     Instruction instruction{};

@@ -54,8 +54,11 @@ namespace assembler {
     Parser_ExpectedOperandSeparator,
     Parser_ExpectedString,
 
-    // Encoder_MissingBranch,
-    // Encoder_DuplicateBranch,
+    IRGenerator_MissingMain,
+    IRGenerator_UndefinedBranch,
+    IRGenerator_ShaddowingBranch,
+    IRGenerator_DuplicateBranch,
+    IRGenerator_DuplicateFunction,
   };
 
   struct Error {

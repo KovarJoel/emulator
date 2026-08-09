@@ -118,6 +118,21 @@ namespace assembler {
     case ErrorType::Parser_ExpectedString:
       std::println(out, "Parser: Expected string");
       break;
+    case ErrorType::IRGenerator_MissingMain:
+      std::println(out, "IRGenerator: Missing main function, there is no entry point");
+      break;
+    case ErrorType::IRGenerator_UndefinedBranch:
+      std::println(out, "IRGenerator: Undefined branch");
+      break;
+    case ErrorType::IRGenerator_ShaddowingBranch:
+      std::println(out, "IRGenerator: Branch shaddows function label");
+      break;
+    case ErrorType::IRGenerator_DuplicateBranch:
+      std::println(out, "IRGenerator: Branch with same label already exists elsewhere in function");
+      break;
+    case ErrorType::IRGenerator_DuplicateFunction:
+      std::println(out, "IRGenerator: Function with same label already exists elsewhere");
+      break;
     }
     
     std::println(out, "  > In file {}:{}:{}", error.file_path, error.line, error.column);
