@@ -2,6 +2,9 @@
 
 #include "AssemblerData.hpp"
 
+#include <span>
+#include <cstddef>
+
 namespace assembler {
   class Assembler {
   public:
@@ -11,6 +14,7 @@ namespace assembler {
 
   private:
     void readFile();
+    void writeFile(std::span<const std::byte> bytes);
 
   private:
     AssemblerData m_data{};

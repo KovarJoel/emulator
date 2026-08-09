@@ -4,8 +4,10 @@
 #include "Lexer.hpp"
 #include "Parser.hpp"
 #include "IRGenerator.hpp"
+#include "Encoder.hpp"
 
 #include <fstream>
+#include <ios>
 #include <iostream>
 
 namespace assembler {
@@ -34,7 +36,12 @@ namespace assembler {
     const auto& parser_tokens = parser.run(lexer_tokens);
 
     IRGenerator ir_gen{ m_data };
-    [[maybe_unused]] const auto& ir = ir_gen.run(parser_tokens);
+    const auto& ir = ir_gen.run(parser_tokens);
+
+    Encoder encoder{};
+    const auto& bytes = encoder.run(ir);
+
+    writeFile(bytes);
   }
 
   void Assembler::readFile() {
@@ -65,5 +72,10 @@ namespace assembler {
         };
       }
     }
+  }
+
+  void Assembler::writeFile(std::span<const std::byte> bytes) {
+    std::ofstream file{ m_data.output_file_path, std::ios_base::out | std::ios_base::binary };
+    file.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
   }
 }

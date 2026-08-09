@@ -53,6 +53,9 @@ namespace assembler {
     Parser_ExpectedAddressingMode,
     Parser_ExpectedOperandSeparator,
     Parser_ExpectedString,
+
+    // Encoder_MissingBranch,
+    // Encoder_DuplicateBranch,
   };
 
   struct Error {
