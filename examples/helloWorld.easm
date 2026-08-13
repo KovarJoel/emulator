@@ -1,0 +1,25 @@
+segment: code
+ 
+# prints hello world to the console
+function main:
+    ADD   r1, r0, 0xFF
+
+    ADD   r2, r0, 0x00
+    ADD   r3, r0, $hello_world_string
+    LD.B  r4, (r3)
+
+  loop:
+    ST.B  0x1000(r2), r1
+    ST.B  0x1001(r2), r1
+    ST.B  0x1002(r2), r1
+    ST.B  0x1003(r2), r4
+    
+    ADD   r2, r2, 4
+    ADD   r3, r3, 1
+    LD.B  r4, (r3)
+    BNE   loop
+
+    HALT
+
+segment: data
+    hello_world_string.B = "Hello, World!", 0x0
