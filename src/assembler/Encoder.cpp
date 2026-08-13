@@ -4,6 +4,7 @@
 #include "core/Instructions/Operations.hpp"
 #include "core/Memory.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <variant>
@@ -13,12 +14,14 @@ namespace assembler {
     m_data.clear();
     m_ir_data = data;
 
-    const auto instruction_data = createInstructionsData();
+    auto instruction_data = createInstructionsData();
     
     const auto header = createHeader(instruction_data.size());
     const auto header_data = createHeaderData(header);
 
     const auto variable_data = createVariablesData(header);
+
+    instruction_data = secondPass();
 
     m_data.append_range(header_data);
     m_data.resize(header.code_begin - core::Memory::OFFSET_HEADER);
@@ -58,18 +61,6 @@ namespace assembler {
       }
     }
 
-    // second pass for labels
-    for (auto& function : m_ir_data.functions) {
-      for (auto& inst : function.instructions) {
-        instructions.emplace_back(
-          inst.opcode,
-          inst.width,
-          createInstructionDestination(inst),
-          createInstructionSources(function, inst)
-        );
-      }
-    }
-
     std::vector<std::byte> binary_instructions{};
 
     for (const auto& inst : instructions) {
@@ -77,6 +68,25 @@ namespace assembler {
     }
 
     return binary_instructions;
+  }
+
+  std::vector<std::byte> Encoder::secondPass() {
+    std::vector<std::byte> data{};
+
+    for (auto& function : m_ir_data.functions) {
+      for (auto& inst : function.instructions) {
+        data.append_range(
+          core::instructions::InstructionData{
+            inst.opcode,
+            inst.width,
+            createInstructionDestination(inst),
+            createInstructionSources(function, inst)
+          }.encode()
+        );
+      }
+    }
+
+    return data;
   }
 
   uint32_t Encoder::createInstructionDestination(const IRGenerator::Instruction& inst) {
@@ -112,12 +122,12 @@ namespace assembler {
       else if (std::holds_alternative<Parser::BranchTarget>(source_operands[i])) {
         const std::string& branch_name = std::get<Parser::BranchTarget>(source_operands[i]).label;
 
-        const auto branch_it = std::find_if(func.branches.begin(), func.branches.end(), [&branch_name](const auto& branch) {
+        const auto branch_it = std::ranges::find_if(func.branches, [&branch_name](const auto& branch) {
           return branch.name == branch_name;
         });
 
         if (branch_it == func.branches.end()) {
-          const auto func_it = std::find_if(m_ir_data.functions.begin(), m_ir_data.functions.end(), [&branch_name](const auto& f) {
+          const auto func_it = std::ranges::find_if(m_ir_data.functions, [&branch_name](const auto& f) {
             return f.name == branch_name;
           });
           assert(func_it != m_ir_data.functions.end());
@@ -126,6 +136,14 @@ namespace assembler {
         } else {
           sources[i].setImmediateValue(branch_it->address);
         }
+      }
+      else if (std::holds_alternative<Parser::VariableReference>(source_operands[i])) {
+        const std::string& variable_name = std::get<Parser::VariableReference>(source_operands[i]).name;
+
+        const auto variable_it = std::ranges::find_if(m_ir_data.variables, [&variable_name](auto&& var){ return var.name == variable_name; });
+        assert(variable_it != m_ir_data.variables.end());
+
+        sources[i].setImmediateValue(variable_it->address);
       }
       else {
         assert(!"invalid variant alternative");

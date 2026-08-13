@@ -19,6 +19,9 @@ namespace assembler {
     generateFunctions();
     generateVariables();
 
+    validateBranches();
+    validateVariables();
+
     return m_data;
   }
 
@@ -87,8 +90,6 @@ namespace assembler {
     if (!m_function_names.contains("main")) {
       throw Error{ ErrorType::IRGenerator_MissingMain, m_assembler_data.input_file_path };
     }
-
-    validateBranches();
   }
 
   void IRGenerator::updateFunctionNames(const Parser::Token& token) {
@@ -106,7 +107,6 @@ namespace assembler {
     
     m_function_names.insert(new_name);
   }
-
 
   IRGenerator::Instruction IRGenerator::getInstruction(const Function& function, size_t& index) {
     Instruction instruction{};
@@ -141,6 +141,9 @@ namespace assembler {
         operands.push_back(std::get<Parser::BranchTarget>(m_parser_tokens[index].token));
         m_branch_targets[function.name].push_back(m_parser_tokens[index]);
       }
+      else if (std::holds_alternative<Parser::VariableReference>(m_parser_tokens[index].token)) {
+        operands.push_back(std::get<Parser::VariableReference>(m_parser_tokens[index].token));
+      }
       else {
         break;
       }
@@ -152,12 +155,12 @@ namespace assembler {
 
   void IRGenerator::generateVariables() {
     for (size_t i = 0; i < m_parser_tokens.size(); ++i) {
-      if (!std::holds_alternative<Parser::VariableName>(m_parser_tokens[i].token)) {
+      if (!std::holds_alternative<Parser::VariableDefinition>(m_parser_tokens[i].token)) {
         continue;
       }
 
       Variable variable{};
-      variable.name = std::get<Parser::VariableName>(m_parser_tokens[i].token).name;
+      variable.name = std::get<Parser::VariableDefinition>(m_parser_tokens[i].token).name;
       ++i;
 
       if (std::holds_alternative<Parser::WidthSpecifier>(m_parser_tokens[i].token)) {
@@ -207,6 +210,27 @@ namespace assembler {
             branch_token.line + 1,
             branch_token.column + 1
           };
+        }
+      }
+    }
+  }
+
+  void IRGenerator::validateVariables() {
+    for (const auto& func : m_data.functions) {
+      for (const auto& inst : func.instructions) {
+        for (const auto& operand : inst.operands) {
+          if (!std::holds_alternative<Parser::VariableReference>(operand)) {
+            continue;
+          }
+
+          const auto& variable_name = std::get<Parser::VariableReference>(operand).name;
+          if (!std::ranges::contains(m_data.variables, variable_name, [](auto&& var) { return var.name; })) {
+            assert(!"undefined variable, implement better diagnostics");
+            throw Error{
+              ErrorType::IRGenerator_UndefinedVariable,
+              m_assembler_data.input_file_path,
+            };
+          }
         }
       }
     }

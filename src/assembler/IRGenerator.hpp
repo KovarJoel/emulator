@@ -29,7 +29,7 @@ namespace assembler {
       uint32_t address{};
     };
 
-    using Operand = std::variant<Parser::Register, Parser::Immediate, Parser::BranchTarget>;
+    using Operand = std::variant<Parser::Register, Parser::Immediate, Parser::BranchTarget, Parser::VariableReference>;
 
     struct Instruction {
       using Opcode = core::instructions::Opcode;
@@ -63,6 +63,7 @@ namespace assembler {
 
     void updateFunctionNames(const Parser::Token& token);
     void validateBranches();
+    void validateVariables();
 
   private:
     std::vector<Operand> getOperands(const Function& function, size_t& index);

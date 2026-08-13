@@ -35,7 +35,11 @@ namespace assembler {
       std::string label;
     };
     
-    struct VariableName {
+    struct VariableReference {
+      std::string name;
+    };
+
+    struct VariableDefinition {
       std::string name;
     };
     
@@ -61,8 +65,8 @@ namespace assembler {
     struct EndOfFile {};
     
     using TokenVariant = std::variant<
-      Segment, FunctionLabel, BranchLabel, BranchTarget, VariableName, Mnemonic,
-      WidthSpecifier, Register, Immediate, NewLine, EndOfFile
+      Segment, FunctionLabel, BranchLabel, BranchTarget, VariableReference, VariableDefinition,
+      Mnemonic, WidthSpecifier, Register, Immediate, NewLine, EndOfFile
     >;
     
     struct Token {
@@ -102,6 +106,8 @@ namespace assembler {
     void parseLoadOperandsLine();
     void parseJumpOperandsLine();
     void parseBranchOperandsLine();
+
+    void parseImmediate();
 
     void parseNumber();
     void parseString();

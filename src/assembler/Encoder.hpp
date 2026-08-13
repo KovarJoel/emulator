@@ -24,6 +24,8 @@ namespace assembler {
 
     uint32_t calculateDataSize() const;
 
+    std::vector<std::byte> secondPass();
+
   private:
     IRGenerator::Data m_ir_data{};
     std::vector<std::byte> m_data{};

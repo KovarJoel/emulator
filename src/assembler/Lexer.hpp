@@ -15,6 +15,7 @@ namespace assembler {
       Colon,
       Comma,
       Dot,
+      Dollar,
       
       Minus,
       Equal,

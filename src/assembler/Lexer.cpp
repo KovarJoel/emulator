@@ -14,6 +14,7 @@ namespace assembler {
       case Lexer::TokenType::Colon:         type = "Colon";         break;
       case Lexer::TokenType::Comma:         type = "Comma";         break;
       case Lexer::TokenType::Dot:           type = "Dot";           break;
+      case Lexer::TokenType::Dollar:        type = "Dollar";        break;
       case Lexer::TokenType::Minus:         type = "Minus";         break;
       case Lexer::TokenType::Equal:         type = "Equal";         break;
       case Lexer::TokenType::LeftParen:     type = "LeftParen";     break;
@@ -133,6 +134,9 @@ namespace assembler {
       }
       else if (line[column_index] == '.') {
         m_tokens.emplace_back(TokenType::Dot, line.substr(column_index, 1), line_index, column_index);
+      }
+      else if (line[column_index] == '$') {
+        m_tokens.emplace_back(TokenType::Dollar, line.substr(column_index, 1), line_index, column_index);
       }
       else if (line[column_index] == '-') {
         m_tokens.emplace_back(TokenType::Minus, line.substr(column_index, 1), line_index, column_index);

@@ -65,7 +65,7 @@ namespace assembler {
       std::println(out, "Parser: Expected jump target");
       break;
     case ErrorType::Parser_ExpectedVariableName:
-      std::println(out, "Parser: Expected a variable name before equals sign");
+      std::println(out, "Parser: Expected a variable name");
       break;
     case ErrorType::Parser_ExpectedEquals:
       std::println(out, "Parser: Expected an equals sign after variable name");
@@ -87,6 +87,9 @@ namespace assembler {
       break;
     case ErrorType::Parser_UnknownMnemonic:
       std::println(out, "Parser: Unknown mnemonic");
+      break;
+    case ErrorType::Parser_ExpectedImmediate:
+      std::println(out, "Parser: Expected immediate value (number or variable address)");
       break;
     case ErrorType::Parser_NumericValueOutOfRange:
       std::println(out, "Parser: Numeric value is outside of the valid word range");
@@ -138,6 +141,9 @@ namespace assembler {
       break;
     case ErrorType::IRGenerator_EmptyFunction:
       std::println(out, "IRGenerator: Empfy function, expected instructions");
+      break;
+    case ErrorType::IRGenerator_UndefinedVariable:
+      std::println(out, "IRGenerator: Undefined variable name");
       break;
     }
     

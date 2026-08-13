@@ -38,14 +38,15 @@ namespace assembler {
     Parser_InvalidWidthSpecifier,
     Parser_ExpectedInitializerValue,
     Parser_ExpectedEndOfInitializer,
-
+    
     Parser_ExpectedMnemonic,
     Parser_UnknownMnemonic,
     
+    Parser_ExpectedImmediate,
     Parser_NumericValueOutOfRange,
     Parser_ExpectedNumber,
     Parser_ExpectedNumberAfterMinus,
-
+    
     Parser_MissingOperands,
     Parser_ExpectedOperand,
     Parser_ExpectedRegisterOperand,
@@ -53,7 +54,7 @@ namespace assembler {
     Parser_ExpectedAddressingMode,
     Parser_ExpectedOperandSeparator,
     Parser_ExpectedString,
-
+    
     IRGenerator_MissingMain,
     IRGenerator_UndefinedBranch,
     IRGenerator_ShaddowingBranch,
@@ -61,6 +62,8 @@ namespace assembler {
     IRGenerator_DuplicateBranch,
     IRGenerator_DuplicateFunction,
     IRGenerator_EmptyFunction,
+
+    IRGenerator_UndefinedVariable,
   };
 
   struct Error {

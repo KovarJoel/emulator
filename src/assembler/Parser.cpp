@@ -17,34 +17,37 @@ namespace assembler {
   std::ostream& operator<<(std::ostream& out, const Parser::Token& token) {
     const auto& tk = token.token;
     if (std::holds_alternative<Parser::Segment>(tk)) {
-      std::println(out, "Segment:        {}",
+      std::println(out, "Segment:            {}",
         std::get<Parser::Segment>(tk).type == Parser::Segment::Type::Code ? "Code" : "Data");
     }
     else if (std::holds_alternative<Parser::FunctionLabel>(tk)) {
-      std::println(out, "FunctionLabel:  {}", std::get<Parser::FunctionLabel>(tk).label);
+      std::println(out, "FunctionLabel:      {}", std::get<Parser::FunctionLabel>(tk).label);
     }
     else if (std::holds_alternative<Parser::BranchLabel>(tk)) {
-      std::println(out, "BranchLabel:    {}", std::get<Parser::BranchLabel>(tk).label);
+      std::println(out, "BranchLabel:        {}", std::get<Parser::BranchLabel>(tk).label);
     }
-    else if (std::holds_alternative<Parser::VariableName>(tk)) {
-      std::println(out, "VariableName:   {}", std::get<Parser::VariableName>(tk).name);
+    else if (std::holds_alternative<Parser::VariableReference>(tk)) {
+      std::println(out, "VariableReference:  {}", std::get<Parser::VariableReference>(tk).name);
+    }
+    else if (std::holds_alternative<Parser::VariableDefinition>(tk)) {
+      std::println(out, "VariableDefinition: {}", std::get<Parser::VariableDefinition>(tk).name);
     }
     else if (std::holds_alternative<Parser::Mnemonic>(tk)) {
-      std::println(out, "Mnemonic:       {}",
+      std::println(out, "Mnemonic:           {}",
         core::instructions::opcodeToName(std::get<Parser::Mnemonic>(tk).opcode));
     }
     else if (std::holds_alternative<Parser::WidthSpecifier>(tk)) {
       using Width = Parser::WidthSpecifier::Width;
       const auto width = std::get<Parser::WidthSpecifier>(tk).width;
-      std::println(out, "WidthSpecifier: {}", width == Width::Byte ? "Byte" :
+      std::println(out, "WidthSpecifier:     {}", width == Width::Byte ? "Byte" :
         (width == Width::HalfWord ? "HalfWord" : "Word"));
     }
     else if (std::holds_alternative<Parser::Register>(tk)) {
-      std::println(out, "Register:       R{}", std::get<Parser::Register>(tk).address);
+      std::println(out, "Register:           R{}", std::get<Parser::Register>(tk).address);
     }
     else if (std::holds_alternative<Parser::Immediate>(tk)) {
       const auto& value = std::get<Parser::Immediate>(tk).value;
-      std::println(out, "Immediate:      {} (0x{:x})", value, value);
+      std::println(out, "Immediate:          {} (0x{:x})", value, value);
     }
     else if (std::holds_alternative<Parser::NewLine>(tk)) {
       std::println(out, "NewLine");
@@ -184,6 +187,24 @@ namespace assembler {
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(is_signed ? 2 : 1);
   }
 
+  void Parser::parseImmediate() {
+    assert(!m_remaining_lexer_tokens.empty());
+    if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number) {
+      parseNumber();
+    }
+    else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar) {
+      assert(m_remaining_lexer_tokens.size() >= 2);
+      if (m_remaining_lexer_tokens[1].type != Lexer::TokenType::Identifier) {
+        throw createError(ErrorType::Parser_ExpectedVariableName, m_remaining_lexer_tokens[1].line, m_remaining_lexer_tokens[1].column);
+      }
+      m_tokens.emplace_back(VariableReference{ m_remaining_lexer_tokens[1].value }, m_remaining_lexer_tokens[1].line, m_remaining_lexer_tokens[1].column);
+      m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(2);
+    }
+    else {
+      throw createError(ErrorType::Parser_ExpectedImmediate, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
+    }
+  }
+
   void Parser::parseNewLine() {
     assert(!m_remaining_lexer_tokens.empty());
     if (m_remaining_lexer_tokens[0].type != Lexer::TokenType::NewLine) {
@@ -241,8 +262,9 @@ namespace assembler {
 
     bool uses_displacement = false;
 
-    if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number) {
-      parseNumber();
+    if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number
+      || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar) {
+      parseImmediate();
       uses_displacement = true;
     }
     
@@ -266,7 +288,7 @@ namespace assembler {
     
     assert(!m_remaining_lexer_tokens.empty());
     if (m_remaining_lexer_tokens[0].type != Lexer::TokenType::LeftSquare) {
-      throw createError(ErrorType::Parser_ExpectedAddressingMode, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
+      return;
     }
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
 
@@ -364,8 +386,9 @@ namespace assembler {
     for (size_t i = 0; i < src_count; ++i) {
       assert(!m_remaining_lexer_tokens.empty());
 
-      if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number) {
-        parseNumber();
+      if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number
+        || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar) {
+        parseImmediate();
       }
       else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Identifier) {
         parseRegisterOperand();
@@ -554,7 +577,7 @@ namespace assembler {
       throw createError(ErrorType::Parser_ExpectedVariableName, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
     }
     
-    m_tokens.emplace_back(VariableName{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
+    m_tokens.emplace_back(VariableDefinition{ m_remaining_lexer_tokens[0].value }, m_remaining_lexer_tokens[0].line, m_remaining_lexer_tokens[0].column);
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
     
     assert(!m_remaining_lexer_tokens.empty());
