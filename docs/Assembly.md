@@ -1,23 +1,20 @@
 # Assembly
+**Make sure to take a look at the [examples](../examples/) directory.**
+
 Keywords, Mnemonics, width specifiers, hexadecimal digits and register names
 are case insensitive.
-
-Whitespace is ignored with the following two exceptions: 
-1. there has to be whitespace between the instruction mnemonic and the first argument
-2. there has to be a whitespace between the `function` keyword and the functions name
-3. each segment specifier, label, instruction and data assignment has to be on a single line.
 
 ## Comments
 The assembler supports comments which start with a hash (`#`).
 Everything in a line after the hash is interpreted as comment.
+Note that a hash inside of a string literal is not considered a comment
+but part of the string.
 
 ## Immediates
 Immediates are assumed to be in decimal representation.
 For hexadecimal prefix with `0x...`, for octal prefix with `0o...`,
 for binary prefix with `0b...`.
-Immediates are always interpreted as unsigned and therefore zero extended.
-To use negative values for immediates,
-load them into a register as follows: `SUB dest, r0, imm`.
+For negative immediates use a preceding minus sign (`-`).
 
 ## Segments
 There is a code and a data segment which may be interleaved in the assembly code.
@@ -41,57 +38,33 @@ Function lables have to be unique for the whole program, branch labels may be re
 in different functions but can not be used if a function or local branch with the same
 label already exists.
 
-Example program:
-```
-segment: code
-
-# prints the digits from 0-9 to the console
-function main:
-    MOV   r1, 48
-    MOV   r2, 0xFF
-    MOV   r3, 0
-
-  loop:
-    ST    r2, 0x1000(r3)
-    ST    r2, 0x1001(r3)
-    ST    r2, 0x1002(r3)
-    ST    r1, 0x1003(r3)
-    
-    ADD   r3, r3, 4
-    INC   r1
-
-    CMP   r1, 57
-    BLT   loop
-
-    HALT
-```
-
 ### Data
 Global variables can be created in the data segment and they are in the form
 ```
-variable_name = <initializer>
+variable_name = <initializer-list>
 ```
 The `variable_name` stores the address of the first byte of the data.
 
-The initializer can be one of those types.
+The initializer list has to be non-empty and can have elements of those types:
 
-- A string denoted by double quotes, e.g. `str = "foo"`. The string is not null terminated.
-Additional bytes can be used with a comma separated list, e.g. `str = "foo", 0x0A, "bar", 0x00`
-to include a new line character between `"foo"` and `"bar"` and end the string with a null
-terminator.
+- A string literal denoted by double quotes, e.g. `"foo"`. The string is not null terminated.
 
-- An integer initialized with a constant in hexadecimal, decimal, octal or binary format.
-For decimal values use a minus (`-`) to indicate negative values and sign extension.
-Decimal values without a minus or values in other bases are zero extended.
-The initializer can contain multiple values in a comma separated list.
+- An immediate value with a constant in hexadecimal, decimal, octal or binary format
 
-Strings use a single byte for each character per default, integers use a full word per default.
-To change the width, the name may be suffixed with a width specifier similar to the
-instructions. This specifier will apply to all elements in the initializer.
+A variable can refer to a sequence of words with a comma separated list,
+e.g. `str.B = "foo", 0x0A, "bar", 0x00` to include a new line character between
+`"foo"` and `"bar"` and end the string with a null terminator.
+
+Note that all elements of an initializer are stored in a whole byte per default
+which also applies to strings. To use the less significant bytes use a width specifier.
+The width specifier applies to all elements of the initializer list.
+This means that `str = "foo", 0x00` will not store the bytes `0x66, 0x6f, 0x6f, 0x00` but rather
+`0x66, 0x00, 0x00, 0x00, 0x6f, 0x00, ...`.
 
 Example:
 ```
 segment: data
   bytes.B = 0xEF, 0xBE, 0xAD, 0xDE
   same_word = 0xDEADBEEF
+  hello_world.B = "Hello, World!", 0x00
 ```
