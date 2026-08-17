@@ -1,15 +1,11 @@
 #include "Emulator.hpp"
 
-#include "core/Console.hpp"
 #include "core/Exceptions.hpp"
 #include "core/Instructions/Operations.hpp"
-#include "core/ProcessorState.hpp"
-#include "core/Instructions/InstructionData.hpp"
 
 #include <iostream>
 #include <print>
-
-#include <ftxui/ftxui.hpp>
+#include <thread>
 
 namespace emulator {
   bool Emulator::setArgs(int argc, const char** argv) {
@@ -29,46 +25,24 @@ namespace emulator {
     return true;
   }
 
-  static void printConsole(const core::Console& console, bool reset = true) {
-    static auto screen = ftxui::Screen::Create(
-      ftxui::Dimension::Fixed(core::Console::WIDTH + 2),
-      ftxui::Dimension::Fixed(core::Console::HEIGHT + 2)
-    );
-
-    for (int32_t y = 0; y < core::Console::HEIGHT; ++y) {
-      for (int32_t x = 0; x < core::Console::WIDTH; ++x) {
-        auto& screen_cell = screen.CellAt(x + 1, y + 1);
-        const auto& console_cell = console.cells[y * core::Console::WIDTH + x]; 
-
-        screen_cell.foreground_color = ftxui::Color::RGB(console_cell.color.red, console_cell.color.green, console_cell.color.blue);
-        screen_cell.character = std::isprint(console_cell.symbol) ? console_cell.symbol : ' ';
-      }
-    }
-
-    ftxui::Render(screen, ftxui::border(ftxui::emptyElement()));
-
-    std::cout << screen.ToString();
-    if (reset) {
-      std::cout << screen.ResetPosition();
-    }
-  }
-
-  static void callback(core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
-    static core::instructions::InstructionData lastInstruction{};
-
+  void Emulator::processorCallback(core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
     using enum core::instructions::Opcode;
-    if (lastInstruction.getOpcode() == ST) {
-      printConsole(state.memory.getConsole());
+    if (m_last_instruction.getOpcode() == ST) {
+      m_app.PostEvent(ftxui::Event::Custom);
     }
 
-    lastInstruction = instruction;
+    m_last_instruction = instruction;
   }
 
   void Emulator::run() {
     if (m_binary_path.empty()) return;
 
-    printConsole(m_processor.getState().memory.getConsole());
-    m_processor.run(callback);
-    printConsole(m_processor.getState().memory.getConsole(), false);
+    std::jthread app{[&]{
+      m_app.Loop(m_console);
+    }};
+    std::jthread processor{[&]{
+      m_processor.run([this](auto&& state, auto&& instruction){ this->processorCallback(state, instruction); });
+      m_app.Exit();
+    }};
   }
 }
