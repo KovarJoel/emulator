@@ -43,9 +43,11 @@ namespace assembler {
     for (auto& function : m_ir_data.functions) {
       function.address = current_pc;
 
+      const uint32_t prev_funcs_instructions_count = instructions.size(); 
+
       for (auto& inst : function.instructions) {
         for (auto& label : function.branches) {
-          if (label.instruction_id == instructions.size()) {
+          if (label.instruction_id == instructions.size() - prev_funcs_instructions_count) {
             label.address = current_pc;
           }
         }
