@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Console.hpp"
+#include "KeyEvents.hpp"
 #include "Exceptions.hpp"
 #include "Types.hpp"
 
@@ -12,6 +13,7 @@
 #include <filesystem>
 #include <memory>
 #include <span>
+#include <mutex>
 
 namespace core {
   class Memory {
@@ -19,6 +21,7 @@ namespace core {
     constexpr static size_t PAGE_SIZE{ 0x1000 };
     constexpr static size_t RAM_SIZE{ 1 << 24 };
     constexpr static size_t OFFSET_CONSOLE{ PAGE_SIZE };
+    constexpr static size_t OFFSET_KEY_MAPPINGS{ 0x7000 };
     constexpr static size_t OFFSET_HEADER{ 0x10000 };
     constexpr static size_t OFFSET_CODE{ OFFSET_HEADER + PAGE_SIZE };
     
@@ -52,6 +55,14 @@ namespace core {
 
     auto& getHeader(this auto&& self) {
       return *self.m_header;
+    }
+
+    auto& getKeyEvents(this auto&& self) {
+      return *self.m_key_events;
+    }
+
+    std::mutex& getMutex() const {
+      return m_mutex;
     }
 
     template <EmulatorType T>
@@ -90,5 +101,8 @@ namespace core {
     std::unique_ptr<std::byte[]> m_memory;
     Console* m_console;
     Header* m_header;
+    KeyEvents* m_key_events;
+
+    mutable std::mutex m_mutex{};
   };
 }

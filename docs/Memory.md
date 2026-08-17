@@ -46,6 +46,23 @@ Accessing a cell at position `(x,y)` is done like `cells[y * 128 + x]`.
 
 ### Keyboard and mouse input
 The input mapping ranges from `0x7000` to `0x7fff`.
+Currently only ascii-printable characters are supported as input events (see std::isprint).
+
+Keyboard input events are stored in a circular FIFO queue where each entry is one byte storing the pressed key in its ascii value.
+There can be a maximum of 256 enqueued events at once. When already 256 events are stored in the queue, later generated events will be silently dropped.
+
+The format is as follows:
+```c
+struct KeyEvents {
+  int8_t event_buffer[256];
+  uint32_t begin;
+  uint32_t size;
+};
+```
+
+The `begin` member indicates the index of the oldest unhandled event, the `size` member the total number of currently stored events.
+To retrieve the index of the next to be used entry the calculation `(begin + size) % 256` is used.
+After consuming one event, the `begin` shall be incremented (mod 256) and the `size` shall be decremented to mark it as consumed.
 
 ## Code and static data
 The binary data of the program must follow this structure, containing these four sections with increasing starting addresses for each. Each section shall be page aligned.

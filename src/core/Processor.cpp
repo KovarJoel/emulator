@@ -4,12 +4,16 @@
 #include "Instructions/Instruction.hpp"
 #include "Instructions/InstructionData.hpp"
 
+#include <mutex>
+
 namespace core {
   void Processor::loadProgram(std::span<const std::byte> binary) {
+    std::lock_guard<std::mutex> lock{ m_state.memory.getMutex() };
     m_state.memory.loadProgram(binary);
   }
   
   void Processor::loadProgram(const std::filesystem::path& file_path) {
+    std::lock_guard<std::mutex> lock{ m_state.memory.getMutex() };
     m_state.memory.loadProgram(file_path);
   }
 
@@ -37,6 +41,8 @@ namespace core {
   }
 
   instructions::InstructionData Processor::fetchAndDecode() const {
+    std::lock_guard<std::mutex> lock{ m_state.memory.getMutex() };
+    
     const auto pc = m_state.registers.getPC().get<uint32_t>();
 
     const auto code_begin = m_state.memory.getHeader().code_begin;

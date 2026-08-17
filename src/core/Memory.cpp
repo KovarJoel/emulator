@@ -1,20 +1,24 @@
 #include "Memory.hpp"
+#include "KeyEvents.hpp"
 
 #include <fstream>
 #include <iterator>
+#include <memory>
 #include <vector>
 
 namespace core {
   Memory::Memory()
     : m_memory{ new (MAX_ALIGNMENT) std::byte[RAM_SIZE]{} },
       m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
-      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) } {
+      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
+      m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
   }
 
   Memory::Memory(const Memory& other)
     : m_memory{ new (MAX_ALIGNMENT) std::byte[RAM_SIZE]{} },
       m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
-      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) } {
+      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
+      m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
     std::memcpy(m_memory.get(), other.m_memory.get(), RAM_SIZE);
   }
 
@@ -24,6 +28,7 @@ namespace core {
       m_header{ other.m_header } {
     other.m_console = nullptr;
     other.m_header = nullptr;
+    other.m_key_events = nullptr;
   }
 
   Memory& Memory::operator=(const Memory& other) {
@@ -35,8 +40,10 @@ namespace core {
     m_memory = std::move(other.m_memory);
     m_console = other.m_console;
     m_header = other.m_header;
+    m_key_events = other.m_key_events;
     other.m_console = nullptr;
     other.m_header = nullptr;
+    other.m_key_events = nullptr;
     return *this;
   }
 
@@ -67,6 +74,9 @@ namespace core {
     if (getComponentOffset(m_header) != other.getComponentOffset(other.m_header)) {
       return false;
     }
+    if (getComponentOffset(m_key_events) != other.getComponentOffset(other.m_key_events)) {
+      return false;
+    }
     return std::memcmp(m_memory.get(), other.m_memory.get(), RAM_SIZE) == 0;
   }
 
@@ -92,5 +102,4 @@ namespace core {
       static_cast<const std::byte*>(component)
     );
   }
-
 }

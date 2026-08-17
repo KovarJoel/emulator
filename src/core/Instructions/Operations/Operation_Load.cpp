@@ -2,11 +2,14 @@
 
 #include "core/Exceptions.hpp"
 
+#include <mutex>
+
 namespace core::instructions::operations {
   void Load::execute(const InstructionData& data, ProcessorState& state) const {
     const uint32_t address = calculateAddress(data, state);
 
     uint32_t result{};
+    std::lock_guard<std::mutex> lock{ state.memory.getMutex() };
 
     switch (data.getWidth()) {
       case InstructionData::Width::Byte:
@@ -32,6 +35,7 @@ namespace core::instructions::operations {
     const uint32_t address = calculateAddress(data, state);
 
     uint32_t result = 0;
+    std::lock_guard<std::mutex> lock{ state.memory.getMutex() };
 
     switch (data.getWidth()) {
       case InstructionData::Width::Byte:
