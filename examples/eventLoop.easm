@@ -1,0 +1,42 @@
+segment: code
+
+# runs an event loop and exits once 'q' (in lower case) was pressed
+function main:
+    ADD   r1, r0, 0xFF
+
+    ADD   r2, r0, 0x00
+    ADD   r3, r0, $info
+    LD.B  r4, (r3)
+
+  print_loop:
+    ST.B  0x1000(r2), r1
+    ST.B  0x1001(r2), r1
+    ST.B  0x1002(r2), r1
+    ST.B  0x1003(r2), r4
+    
+    ADD   r2, r2, 4
+    ADD   r3, r3, 1
+    LD.B  r4, (r3)
+    BNE   print_loop
+
+  event_loop:
+    LD    r1, 0x7104(r0)    # r1 = size
+    BE    event_loop
+
+    LD    r2, 0x7100(r0)    # r2 = begin
+    LD.B  r3, 0x7000(r2)    # r3 = event
+    SUB   r0, r3, 0x71      # r3 == 'q'
+    BE    end
+
+    ADD   r2, r2, 1         # r2 = begin + 1
+    REM   r2, r2, 256       # r2 = (begin + 1) % 256
+    SUB   r1, r1, 1         # r1 = size - 1
+    ST    0x7104(r0), r1
+    ST    0x7100(r0), r2
+    JMP   event_loop
+  
+  end:
+    HALT
+
+segment: data
+  info.B = "This program runs an infinite event loop. Press 'q' (lower case) to stop...", 0x00
