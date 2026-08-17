@@ -313,7 +313,7 @@ Stores the source value into the destination value. Equivalent to `ADD dest, r0,
 ```
 CALL function
 ```
-Equivalent to `ADD ra, pc, 8; JMP function`.
+Equivalent to `ADD ra, pc, 12; JMP function`.
 
 ### Return
 ```
