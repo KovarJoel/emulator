@@ -15,8 +15,14 @@ FetchContent_Declare(
   GIT_TAG        v3.8.1 # or a later release
 )
 
+FetchContent_Declare(ftxui
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+  GIT_TAG v7.0.3
+)
+
 FetchContent_MakeAvailable(
   Catch2
+  ftxui
 )
 
 ##################################
@@ -67,6 +73,7 @@ target_sources(emulator PRIVATE
 
 target_link_libraries(emulator PRIVATE
   core
+  ftxui::ftxui
 )
 
 target_compile_options(core PRIVATE

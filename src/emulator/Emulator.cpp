@@ -6,10 +6,10 @@
 #include "core/ProcessorState.hpp"
 #include "core/Instructions/InstructionData.hpp"
 
-#include <format>
 #include <iostream>
 #include <print>
-#include <sstream>
+
+#include <ftxui/ftxui.hpp>
 
 namespace emulator {
   bool Emulator::setArgs(int argc, const char** argv) {
@@ -29,59 +29,28 @@ namespace emulator {
     return true;
   }
 
-  static std::string rgbToAnsi(core::Console::Color color) {
-    return std::format("\x1b[38;2;{};{};{}m", color.red, color.green, color.blue);
-  }
+  static void printConsole(const core::Console& console, bool reset = true) {
+    static auto screen = ftxui::Screen::Create(
+      ftxui::Dimension::Fixed(core::Console::WIDTH + 2),
+      ftxui::Dimension::Fixed(core::Console::HEIGHT + 2)
+    );
 
-  static std::string moveToPreviousLineBeginning(size_t count = 1) {
-    return std::format("\x1b[{}F", count);
-  }
+    for (int32_t y = 0; y < core::Console::HEIGHT; ++y) {
+      for (int32_t x = 0; x < core::Console::WIDTH; ++x) {
+        auto& screen_cell = screen.CellAt(x + 1, y + 1);
+        const auto& console_cell = console.cells[y * core::Console::WIDTH + x]; 
 
-  static void printConsole(const core::Console& console) {
-    static bool firstDraw = true;
-
-    std::stringstream stream{};
-    
-    if (!firstDraw) {
-      stream << moveToPreviousLineBeginning(console.HEIGHT + 2);
-    }
-    firstDraw = false;
-
-    stream << rgbToAnsi({0xFF, 0xFF, 0xFF});
-    stream << '+';
-    for (int32_t x = 0; x < console.WIDTH; ++x) {
-      stream << '-';
-    }
-    stream << "+\n";
-
-    for (int32_t y = 0; y < console.HEIGHT; ++y) {
-      stream << rgbToAnsi({0xFF, 0xFF, 0xFF});
-      stream << '|';
-
-      for (int32_t x = 0; x < console.WIDTH; ++x) {
-        auto& cell = console.cells[y * console.HEIGHT + x];
-
-        stream << rgbToAnsi(cell.color);
-        if (std::isprint(cell.symbol)) {
-          stream << static_cast<char>(cell.symbol);
-        }
-        else {
-          stream << ' ';
-        }
+        screen_cell.foreground_color = ftxui::Color::RGB(console_cell.color.red, console_cell.color.green, console_cell.color.blue);
+        screen_cell.character = std::isprint(console_cell.symbol) ? console_cell.symbol : ' ';
       }
-      
-      stream << rgbToAnsi({0xFF, 0xFF, 0xFF});
-      stream << "|\n";
     }
 
-    stream << rgbToAnsi({0xFF, 0xFF, 0xFF});
-    stream << '+';
-    for (int32_t x = 0; x < console.WIDTH; ++x) {
-      stream << '-';
-    }
-    stream << "+\n";
+    ftxui::Render(screen, ftxui::border(ftxui::emptyElement()));
 
-    std::cout << stream.str();
+    std::cout << screen.ToString();
+    if (reset) {
+      std::cout << screen.ResetPosition();
+    }
   }
 
   static void callback(core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
@@ -100,6 +69,6 @@ namespace emulator {
 
     printConsole(m_processor.getState().memory.getConsole());
     m_processor.run(callback);
-    printConsole(m_processor.getState().memory.getConsole());
+    printConsole(m_processor.getState().memory.getConsole(), false);
   }
 }
