@@ -1,0 +1,181 @@
+segment: code
+
+function main:
+    ADD   r12, r15, 12
+    JMP   drawBackground
+
+  game_loop:
+    ADD   r12, r15, 12
+    JMP   drawHead
+
+    ADD   r12, r15, 12
+    JMP   updateDirection
+    
+    ADD   r12, r15, 12
+    JMP   move
+
+    ADD   r12, r15, 12
+    JMP   sleep
+
+    JMP   game_loop
+
+function move:
+    LD    r1, $head_pos_x(r0)
+    LD    r2, $head_pos_y(r0)
+    LD    r3, $direction_char(r0)
+
+    ST    $head_pos_x_old(r0), r1
+    ST    $head_pos_y_old(r0), r2
+
+    SUB   r0, r3, 0x77      # r3 == 'w'
+    BNE   try_a
+    SUB   r2, r2, 1
+    JMP   end
+    
+  try_a:
+    SUB   r0, r3, 0x61      # r3 == 'a'
+    BNE   try_s
+    SUB   r1, r1, 1
+    JMP   end
+    
+  try_s:
+    SUB   r0, r3, 0x73      # r3 == 's'
+    BNE   try_d
+    ADD   r2, r2, 1
+    JMP   end
+
+  # had to be 'd' now, no need to check
+  try_d:
+    ADD   r1, r1, 1
+    
+  end:
+    ST    $head_pos_x(r0), r1
+    ST    $head_pos_y(r0), r2
+    
+    JMP   r12
+
+function sleep:
+    ADD   r1, r0, 100000
+
+    SUB   r0, r3, 0x61      # r3 == 'a'
+    BE    loop
+    SUB   r0, r3, 0x64      # r3 == 'd'
+    BE   loop
+
+  double_time:
+    MUL   r1, r1, 2
+  
+  loop:
+    SUB   r1, r1, 1
+    BNE   loop
+    
+    JMP   r12
+
+function updateDirection:
+  event_loop:
+    LD    r1, 0x7104(r0)    # r1 = size
+    BNE   check_event
+    JMP   r12
+
+  check_event:
+    LD    r2, 0x7100(r0)    # r2 = begin
+    LD.B  r3, 0x7000(r2)    # r3 = event
+
+    SUB   r0, r3, 0x77      # r3 == 'w'
+    BE    store_direction
+    SUB   r0, r3, 0x61      # r3 == 'a'
+    BE    store_direction
+    SUB   r0, r3, 0x73      # r3 == 's'
+    BE    store_direction
+    SUB   r0, r3, 0x64      # r3 == 'd'
+    BNE   consume_event
+
+  store_direction:
+    ST    $direction_char(r0), r3
+
+  consume_event:
+    ADD   r2, r2, 1         # r2 = begin + 1
+    REM   r2, r2, 256       # r2 = (begin + 1) % 256
+    SUB   r1, r1, 1         # r1 = size - 1
+    ST    0x7104(r0), r1
+    ST    0x7100(r0), r2
+    JMP   event_loop
+
+function drawHead:
+    ADD   r1, r0, 0x1FFF32    # green color
+    ADD   r2, r0, 0x40        # @-sign
+
+    # clear old head
+    LD    r3, $head_pos_x_old(r0)
+    LD    r4, $head_pos_y_old(r0)
+
+    MUL   r5, r4, 128
+    ADD   r5, r5, r3
+    MUL   r5, r5, 4
+
+    ST    0x1000(r5), r0
+    
+    # draw new head
+    LD    r3, $head_pos_x(r0)
+    LD    r4, $head_pos_y(r0)
+
+    MUL   r5, r4, 128
+    ADD   r5, r5, r3
+    MUL   r5, r5, 4
+
+    ST    0x1000(r5), r1
+    ST.B  0x1003(r5), r2
+
+    JMP r12
+
+function drawBackground:
+    ADD   r1, r0, 0xC0C0FF    # brown color
+    ADD   r2, r0, 0x23        # #-sign
+
+    ADD   r3, r0, r0          # y coord
+  
+  outer:
+    ADD   r4, r0, r0          # x coord
+  
+  inner:
+    MUL   r5, r3, 128         # index
+    ADD   r5, r5, r4
+    MUL   r5, r5, 4
+
+    SUB   r0, r4, r0
+    BE    draw_wall
+    SUB   r0, r4, 127
+    BE    draw_wall
+    SUB   r0, r3, r0
+    BE    draw_wall
+    SUB   r0, r3, 41
+    BNE   draw_nothing
+
+  draw_wall:
+    ST    0x1000(r5), r1
+    ST.B  0x1003(r5), r2
+
+    JMP   inner_end
+
+  draw_nothing:
+    ST    0x1000(r5), r0
+
+  inner_end:
+    ADD   r4, r4, 1
+    SUB   r0, r4, 128
+    BNE   inner
+
+  outer_end:
+    ADD   r3, r3, 1
+    SUB   r0, r3, 42
+    BNE   outer
+
+  end:
+    JMP   r12
+
+segment: data
+  head_pos_x = 64
+  head_pos_y = 21
+  head_pos_x_old = 63
+  head_pos_y_old = 21
+  direction_char = "d"
