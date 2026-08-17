@@ -55,8 +55,8 @@ The format is as follows:
 ```c
 struct KeyEvents {
   int8_t event_buffer[256];
-  uint32_t begin;
-  uint32_t size;
+  uint32_t begin;   // offset 0x100
+  uint32_t size;    // offset 0x104
 };
 ```
 
