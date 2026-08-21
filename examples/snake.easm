@@ -6,7 +6,7 @@ function main:
 
   game_loop:
     ADD   r12, r15, 12
-    JMP   drawHead
+    JMP   drawSnake
 
     ADD   r12, r15, 12
     JMP   updateDirection
@@ -20,12 +20,28 @@ function main:
     JMP   game_loop
 
 function move:
+  # move tail
+    ADD   r1, r0, $head_pos_x   # r1 = address of coords
+    LD    r2, $size(r0)         # r2 = number of coords
+    SUB   r2, r2, 1             # r2 = number of coords - 1
+
+  loop:
+    MUL   r3, r2, 8
+    ADD   r3, r3, r1            # r3 = coord addr
+
+    LD    r4, 0(r3)             # r4 = old pos x
+    LD    r5, 4(r3)             # r4 = old pos y
+
+    ST    8(r3), r4
+    ST    12(r3), r5
+
+    SUB   r2, r2, 1
+    BGE   loop
+
+  # move head to new pos in direction
     LD    r1, $head_pos_x(r0)
     LD    r2, $head_pos_y(r0)
     LD    r3, $direction_char(r0)
-
-    ST    $head_pos_x_old(r0), r1
-    ST    $head_pos_y_old(r0), r2
 
     SUB   r0, r3, 0x77      # r3 == 'w'
     BNE   try_a
@@ -56,11 +72,12 @@ function move:
 
 function sleep:
     ADD   r1, r0, 100000
+    LD    r3, $direction_char(r0)
 
     SUB   r0, r3, 0x61      # r3 == 'a'
     BE    loop
     SUB   r0, r3, 0x64      # r3 == 'd'
-    BE   loop
+    BE    loop
 
   double_time:
     MUL   r1, r1, 2
@@ -101,35 +118,62 @@ function updateDirection:
     ST    0x7100(r0), r2
     JMP   event_loop
 
-function drawHead:
+function drawSnake:
+  # draw head
     ADD   r1, r0, 0x1FFF32    # green color
     ADD   r2, r0, 0x40        # @-sign
-
-    # clear old head
-    LD    r3, $head_pos_x_old(r0)
-    LD    r4, $head_pos_y_old(r0)
-
-    MUL   r5, r4, 128
-    ADD   r5, r5, r3
-    MUL   r5, r5, 4
-
-    ST    0x1000(r5), r0
     
-    # draw new head
-    LD    r3, $head_pos_x(r0)
-    LD    r4, $head_pos_y(r0)
+    LD    r3, $head_pos_x(r0) # r3 = head pos x
+    LD    r4, $head_pos_y(r0) # r4 = head pos y
 
-    MUL   r5, r4, 128
+    MUL   r5, r4, 128         # r5 = console index
     ADD   r5, r5, r3
     MUL   r5, r5, 4
 
     ST    0x1000(r5), r1
     ST.B  0x1003(r5), r2
 
-    JMP r12
+  # clear old tail
+    LD    r1, $size(r0)         # r1 = size
+    MUL   r1, r1, 8             # r1 = old tail coord index
+    ADD   r1, r1, $head_pos_x   # r1 = old tail coord address
+    
+    LD    r4, (r1)              # r4 = x
+    LD    r5, 4(r1)             # r5 = y
+    MUL   r5, r5, 128           # r5 = console index
+    ADD   r5, r5, r4
+    MUL   r5, r5, 4
+
+    ST    0x1000(r5), r0
+    ST.B  0x1003(r5), r0
+  
+  # draw remaining body
+    ADD   r2, r0, 0x389620      # darker green color
+    ADD   r3, r0, 0x4f          # 'O' char
+    SUB   r1, r1, 8
+    
+    SUB   r0, r1, $head_pos_x
+    BE    end
+    
+  loop:
+    LD    r4, (r1)              # r4 = x
+    LD    r5, 4(r1)             # r5 = y
+    MUL   r5, r5, 128           # r5 = console index
+    ADD   r5, r5, r4
+    MUL   r5, r5, 4
+
+    ST    0x1000(r5), r2
+    ST.B  0x1003(r5), r3
+
+    SUB   r1, r1, 8
+    SUB   r0, r1, $head_pos_x
+    BNE   loop
+
+  end:
+    JMP   r12
 
 function drawBackground:
-    ADD   r1, r0, 0xC0C0FF    # brown color
+    ADD   r1, r0, 0x7D6E64    # grey color
     ADD   r2, r0, 0x23        # #-sign
 
     ADD   r3, r0, r0          # y coord
@@ -174,8 +218,9 @@ function drawBackground:
     JMP   r12
 
 segment: data
-  head_pos_x = 64
-  head_pos_y = 21
-  head_pos_x_old = 63
-  head_pos_y_old = 21
-  direction_char = "d"
+  direction_char  = "d"
+  size            = 5
+  head_pos_x      = 64
+  head_pos_y      = 21
+  initial_tail_cells      = 63, 21,   62, 21,   61, 21,   60, 21
+  initial_old_tail_cell   = 59, 21
