@@ -261,6 +261,12 @@ namespace assembler {
     assert(!m_remaining_lexer_tokens.empty());
 
     bool uses_displacement = false;
+    
+    const Parser::Token zero_displacement{
+      Immediate{ 0 },
+      m_remaining_lexer_tokens[0].line,
+      m_remaining_lexer_tokens[0].column
+    };
 
     if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number
       || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar) {
@@ -288,6 +294,7 @@ namespace assembler {
     
     assert(!m_remaining_lexer_tokens.empty());
     if (m_remaining_lexer_tokens[0].type != Lexer::TokenType::LeftSquare) {
+      m_tokens.insert(std::prev(m_tokens.end()), zero_displacement);
       return;
     }
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);

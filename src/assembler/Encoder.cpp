@@ -107,6 +107,7 @@ namespace assembler {
     std::array<RegisterOrImmediate, 2> sources{};
 
     std::span<const IRGenerator::Operand> source_operands{};
+    assert(inst.operands.size() == opcodeGetDestCount(inst.opcode) + opcodeGetSrcCount(inst.opcode));
     if (inst.opcode == core::instructions::Opcode::ST) {
       source_operands = { inst.operands.begin(), inst.operands.begin() + 2 };
     }
