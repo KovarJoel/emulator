@@ -6,18 +6,58 @@ function main:
 
   game_loop:
     ADD   r12, r15, 12
-    JMP   drawSnake
-
-    ADD   r12, r15, 12
     JMP   updateDirection
     
     ADD   r12, r15, 12
     JMP   move
 
     ADD   r12, r15, 12
+    JMP   generateFood
+
+    ADD   r12, r15, 12
+    JMP   drawSnake
+
+    ADD   r12, r15, 12
+    JMP   drawFood
+
+    ADD   r12, r15, 12
     JMP   sleep
 
     JMP   game_loop
+
+function generateFood:
+    LD    r1, $food_eaten(r0)
+    BNE   generate
+    JMP   r12
+
+  generate:
+    RAND  r1, 1, 126
+    RAND  r2, 1, 40
+    JMP   end
+
+    LD    r3, $size(r0)
+    SUB   r3, r3, 1
+    MUL   r3, r3, 4
+    ADD   r3, r3, $head_pos_x
+
+  loop:
+    LD    r4, (r3)
+    LD    r5, 4(r3)
+    
+    SUB   r4, r4, r1
+    SUB   r5, r5, r2
+    OR    r4, r4, r5
+    BE    generate
+
+    SUB   r3, r3, 8
+    SUB   r0, r3, $head_pos_x
+    BGE   loop
+
+  end:
+    ST    $food_eaten(r0), r0
+    ST    $food_pos_x(r0), r1
+    ST    $food_pos_y(r0), r2
+    JMP r12
 
 function move:
   # move tail
@@ -65,6 +105,18 @@ function move:
     ADD   r1, r1, 1
     
   end:
+    LD    r3, $food_pos_x(r0)
+    LD    r4, $food_pos_y(r0)
+
+    SUB   r0, r3, r1
+    BNE   store
+    SUB   r0, r4, r2
+    BNE   store
+
+    ADD   r5, r0, 1
+    ST    $food_eaten(r0), r5
+
+  store:
     ST    $head_pos_x(r0), r1
     ST    $head_pos_y(r0), r2
     
@@ -217,8 +269,31 @@ function drawBackground:
   end:
     JMP   r12
 
+function drawFood:
+    LD    r1, $food_eaten(r0)
+    BNE   end
+
+    LD    r1, $food_pos_x(r0)
+    LD    r2, $food_pos_y(r0)
+
+    MUL   r3, r2, 128
+    ADD   r3, r3, r1
+    MUL   r3, r3, 4
+
+    ADD   r4, r0, 0x0000FF      # color red
+    ADD   r5, r0, 0x2A          # '*' char
+
+    ST    0x1000(r3), r4
+    ST.B  0x1003(r3), r5
+
+  end:
+    JMP   r12
+
 segment: data
   direction_char  = "d"
+  food_eaten      = 1
+  food_pos_x      = 0
+  food_pos_y      = 0
   size            = 5
   head_pos_x      = 64
   head_pos_y      = 21
