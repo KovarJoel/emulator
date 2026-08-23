@@ -324,6 +324,8 @@ function sleep:
 
 function updateDirection:
     ADD   r4, r0, r0
+    LD    r5, $direction_char(r0)
+
   event_loop:
     LD    r1, 0x7104(r0)    # r1 = size
     BNE   check_event
@@ -333,14 +335,32 @@ function updateDirection:
     LD    r2, 0x7100(r0)    # r2 = begin
     LD.B  r3, 0x7000(r2)    # r3 = event
 
+    SUB   r0, r3, r5        # new direction == old direction
+    BE    consume_event     
+
     SUB   r0, r3, 0x77      # r3 == 'w'
-    BE    store_direction
+    BNE   try_a
+    SUB   r0, r5, 0x73
+    BE    consume_event
+    JMP   store_direction
+  try_a:
     SUB   r0, r3, 0x61      # r3 == 'a'
-    BE    store_direction
+    BNE   try_s
+    SUB   r0, r5, 0x64
+    BE    consume_event
+    JMP   store_direction
+  try_s:
     SUB   r0, r3, 0x73      # r3 == 's'
-    BE    store_direction
+    BNE   try_d
+    SUB   r0, r5, 0x77
+    BE    consume_event
+    JMP   store_direction
+  try_d:
     SUB   r0, r3, 0x64      # r3 == 'd'
     BNE   consume_event
+    SUB   r0, r5, 0x61
+    BE    consume_event
+    JMP   store_direction
 
   store_direction:
     ST    $direction_char(r0), r3
