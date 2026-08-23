@@ -25,6 +25,137 @@ function main:
 
     JMP   game_loop
 
+# arg1: number
+# arg2: start x
+# arg3: start y
+# ret1: success
+# ret2: next start x
+# ret3: next start y
+function printUnsigned:
+    ADD   r4, r0, 0xFFFFFF
+    ADD   r5, r0, 0x30      # '0' char
+
+    SUB   r0, r1, r0
+    BNE   start
+
+    MUL   r6, r3, 128
+    ADD   r6, r6, r2
+    MUL   r6, r6, 4
+    ADD   r6, r6, 0x1000
+
+    ST    (r6), r4
+    ST.B  3(r6), r5
+    ADD   r1, r0, r1
+    JMP   end
+
+  start:
+    ADD   r5, r0, r13
+
+  loop_convert:
+    REM   r7, r1, 10
+    ADD   r7, r7, 0x30    # '0' char
+
+    SUB   r13, r13, 4
+    ST    (r13), r7
+
+    DIV   r1, r1, 10
+    BNE   loop_convert
+
+  loop_print:
+    LD    r7, (r13)
+    ADD   r13, r13, 4
+
+    MUL   r6, r3, 128
+    ADD   r6, r6, r2
+    MUL   r6, r6, 4
+    ADD   r6, r6, 0x1000
+
+    ST    (r6), r4
+    ST.B  3(r6), r7
+
+    ADD   r2, r2, 1
+    SUB   r0, r2, 128
+    BNE   end_loop
+
+    ADD   r2, r0, r0
+    ADD   r3, r3, 1
+    SUB   r0, r3, 42
+    BNE   end_loop
+
+    ADD   r1, r0, r0
+    JMP   end
+
+  end_loop:
+    SUB   r0, r13, r5
+    BNE   loop_print
+  
+    ADD   r1, r0, r1
+
+  end:
+    JMP   r12
+
+# arg1: pointer to null-terminated string
+# arg2: start x
+# arg3: start y
+# ret1: success
+# ret2: next start x
+# ret3: next start y
+function printString:
+    SUB   r0, r1, r0
+    BNE   start
+    
+    ADD   r1, r0, r0
+    JMP   end
+    
+  start:
+    ADD   r4, r0, 0xFFFFFF    # color white
+
+  loop:
+    LD.B  r5, (r1)
+    BE    end
+
+    MUL   r6, r3, 128
+    ADD   r6, r6, r2
+    MUL   r6, r6, 4
+    ADD   r6, r6, 0x1000
+
+    ST    (r6), r4
+    ST.B  3(r6), r5
+
+    ADD   r2, r2, 1
+    SUB   r0, r2, 128
+    BNE   end_loop
+
+    ADD   r2, r0, r0
+    ADD   r3, r3, 1
+    SUB   r0, r3, 42
+    BNE   end_loop
+
+    ADD   r1, r0, r0
+    JMP   end
+
+  end_loop:
+    ADD   r1, r1, 1
+    JMP   loop
+
+    ADD   r1, r0, 1
+  
+  end:
+    JMP   r12
+
+function gameEnd:
+    ADD   r1, r0, $score_string
+    ADD   r2, r0, 50
+    ADD   r3, r0, 21
+    ADD   r12, r15, 12
+    JMP   printString
+
+    LD    r1, $size(r0)
+    ADD   r12, r15, 12
+    JMP   printUnsigned
+
+    HALT
+
 function generateFood:
     LD    r1, $food_eaten(r0)
     BNE   generate
@@ -130,7 +261,46 @@ function move:
 
     ST    $head_pos_x(r0), r1
     ST    $head_pos_y(r0), r2
-    
+
+  check_game_end:
+  check_collision_walls:
+    SUB   r0, r1, 0
+    BLE   call_game_end
+    SUB   r0, r1, 127
+    BGE   call_game_end
+    SUB   r0, r2, 0
+    BLE   call_game_end
+    SUB   r0, r2, 41
+    BGE   call_game_end
+  check_size:
+    LD    r3, $size(r0)
+    ADD   r4, r0, 126
+    MUL   r4, r4, 40
+    SUB   r0, r3, r4
+    BE    call_game_end
+  check_collision_self:
+    ADD   r3, r0, 1
+  loop_self_collision:
+    MUL   r4, r3, 8
+    ADD   r4, r4, $head_pos_x
+    LD    r5, (r4)
+    SUB   r0, r5, r1
+    BNE   end_loop_self_collision
+    LD    r5, 4(r4)
+    SUB   r0, r5, r2
+    BNE   end_loop_self_collision
+    JMP call_game_end
+  end_loop_self_collision:
+    ADD   r3, r3, 1
+    SUB   r0, r3, $size
+    BNE   loop_self_collision
+
+    JMP end_move
+  call_game_end:
+    ADD   r12, r15, 12
+    JMP   gameEnd
+
+  end_move:
     JMP   r12
 
 function sleep:
@@ -301,6 +471,7 @@ function drawFood:
     JMP   r12
 
 segment: data
+  score_string.B  = "Game Ended... Your score: ", 0x00
   direction_char  = "d"
   food_eaten      = 1
   food_pos_x      = 0
