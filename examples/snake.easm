@@ -323,6 +323,7 @@ function sleep:
     JMP   r12
 
 function updateDirection:
+    ADD   r4, r0, r0
   event_loop:
     LD    r1, 0x7104(r0)    # r1 = size
     BNE   check_event
@@ -343,6 +344,7 @@ function updateDirection:
 
   store_direction:
     ST    $direction_char(r0), r3
+    ADD   r4, r0, 1
 
   consume_event:
     ADD   r2, r2, 1         # r2 = begin + 1
@@ -350,7 +352,13 @@ function updateDirection:
     SUB   r1, r1, 1         # r1 = size - 1
     ST    0x7104(r0), r1
     ST    0x7100(r0), r2
+
+    SUB   r0, r4, 1
+    BE    end
     JMP   event_loop
+
+  end:
+    JMP   r12
 
 function drawSnake:
   # draw head
