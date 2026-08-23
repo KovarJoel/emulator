@@ -296,6 +296,16 @@ destination register. Wraps around to `0` after `UINT32_MAX` cycles.
 
 **Zero Flag:** Set iff the result is 0.
 
+### Random
+```
+RAND dest, src1, src2
+```
+Generates a pseudo-random word and stores it in the destination register.
+The generated word will be in the unsigned range `[src1, src2]`.
+
+**Zero Flag:** Set iff the result is 0.
+**Sign Flag:** Set iff the MSB of the result is 1.
+
 ## Pseudo Instructions
 ### No-Operation
 ```

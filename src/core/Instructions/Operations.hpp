@@ -42,7 +42,8 @@
   X(BO,     OpcodeType::Branch,       BranchOverflow,             0,  1,    )\
   X(BNO,    OpcodeType::Branch,       BranchNotOverflow,          0,  1,    )\
   X(HALT,   OpcodeType::Other,        Halt,                       0,  0,    )\
-  X(CYCL,   OpcodeType::Other,        Cycle,                      1,  0,    )
+  X(CYCL,   OpcodeType::Other,        Cycle,                      1,  0,    )\
+  X(RAND,   OpcodeType::Other,        Random,                     1,  2,    )
 
 namespace core::instructions {
   enum class OpcodeType {

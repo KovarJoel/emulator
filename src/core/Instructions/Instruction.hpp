@@ -13,6 +13,7 @@
 #include "Operations/Operation_Load.hpp"
 #include "Operations/Operation_Logical.hpp"
 #include "Operations/Operation_Multiply.hpp"
+#include "Operations/Operation_Random.hpp"
 #include "Operations/Operation_Remainder.hpp"
 #include "Operations/Operation_Rotate.hpp"
 #include "Operations/Operation_Shift.hpp"
