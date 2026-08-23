@@ -33,11 +33,10 @@ function generateFood:
   generate:
     RAND  r1, 1, 126
     RAND  r2, 1, 40
-    JMP   end
 
     LD    r3, $size(r0)
     SUB   r3, r3, 1
-    MUL   r3, r3, 4
+    MUL   r3, r3, 8
     ADD   r3, r3, $head_pos_x
 
   loop:
@@ -46,7 +45,7 @@ function generateFood:
     
     SUB   r4, r4, r1
     SUB   r5, r5, r2
-    OR    r4, r4, r5
+    OR    r0, r4, r5
     BE    generate
 
     SUB   r3, r3, 8
@@ -57,10 +56,56 @@ function generateFood:
     ST    $food_eaten(r0), r0
     ST    $food_pos_x(r0), r1
     ST    $food_pos_y(r0), r2
-    JMP r12
+    JMP   r12
 
 function move:
-  # move tail
+  # move head to new pos in direction
+    LD    r1, $head_pos_x(r0)
+    LD    r2, $head_pos_y(r0)
+    LD    r3, $direction_char(r0)
+
+    SUB   r0, r3, 0x77      # r3 == 'w'
+    BNE   try_a
+    SUB   r2, r2, 1
+    JMP   check_for_food
+    
+  try_a:
+    SUB   r0, r3, 0x61      # r3 == 'a'
+    BNE   try_s
+    SUB   r1, r1, 1
+    JMP   check_for_food
+    
+  try_s:
+    SUB   r0, r3, 0x73      # r3 == 's'
+    BNE   try_d
+    ADD   r2, r2, 1
+    JMP   check_for_food
+
+  # has to be 'd' now, no need to check
+  try_d:
+    ADD   r1, r1, 1
+    
+  check_for_food:
+    LD    r3, $food_pos_x(r0)
+    LD    r4, $food_pos_y(r0)
+
+    # save new head pos on stack
+    SUB   r13, r13, 8
+    ST    4(r13), r1
+    ST    (r13), r2
+
+    SUB   r0, r3, r1
+    BNE   move_tail
+    SUB   r0, r4, r2
+    BNE   move_tail
+
+    ADD   r5, r0, 1
+    ST    $food_eaten(r0), r5
+    LD    r1, $size(r0)
+    ADD   r1, r1, r5
+    ST    $size(r0), r1
+
+  move_tail:
     ADD   r1, r0, $head_pos_x   # r1 = address of coords
     LD    r2, $size(r0)         # r2 = number of coords
     SUB   r2, r2, 1             # r2 = number of coords - 1
@@ -78,45 +123,11 @@ function move:
     SUB   r2, r2, 1
     BGE   loop
 
-  # move head to new pos in direction
-    LD    r1, $head_pos_x(r0)
-    LD    r2, $head_pos_y(r0)
-    LD    r3, $direction_char(r0)
+  store_head:
+    LD    r1, 4(r13)
+    LD    r2, (r13)
+    ADD   r13, r13, 8
 
-    SUB   r0, r3, 0x77      # r3 == 'w'
-    BNE   try_a
-    SUB   r2, r2, 1
-    JMP   end
-    
-  try_a:
-    SUB   r0, r3, 0x61      # r3 == 'a'
-    BNE   try_s
-    SUB   r1, r1, 1
-    JMP   end
-    
-  try_s:
-    SUB   r0, r3, 0x73      # r3 == 's'
-    BNE   try_d
-    ADD   r2, r2, 1
-    JMP   end
-
-  # had to be 'd' now, no need to check
-  try_d:
-    ADD   r1, r1, 1
-    
-  end:
-    LD    r3, $food_pos_x(r0)
-    LD    r4, $food_pos_y(r0)
-
-    SUB   r0, r3, r1
-    BNE   store
-    SUB   r0, r4, r2
-    BNE   store
-
-    ADD   r5, r0, 1
-    ST    $food_eaten(r0), r5
-
-  store:
     ST    $head_pos_x(r0), r1
     ST    $head_pos_y(r0), r2
     
