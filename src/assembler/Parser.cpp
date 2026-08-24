@@ -64,7 +64,7 @@ namespace assembler {
 
   std::string Parser::lower(std::string str) {
     for (auto& ch : str) {
-      ch = std::tolower(ch);
+      ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
     }
     return str;
   }

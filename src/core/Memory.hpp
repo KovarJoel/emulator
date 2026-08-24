@@ -18,12 +18,12 @@
 namespace core {
   class Memory {
   public:
-    constexpr static size_t PAGE_SIZE{ 0x1000 };
-    constexpr static size_t RAM_SIZE{ 1 << 24 };
-    constexpr static size_t OFFSET_CONSOLE{ PAGE_SIZE };
-    constexpr static size_t OFFSET_KEY_MAPPINGS{ 0x7000 };
-    constexpr static size_t OFFSET_HEADER{ 0x10000 };
-    constexpr static size_t OFFSET_CODE{ OFFSET_HEADER + PAGE_SIZE };
+    constexpr static uint32_t PAGE_SIZE{ 0x1000 };
+    constexpr static uint32_t RAM_SIZE{ 1 << 24 };
+    constexpr static uint32_t OFFSET_CONSOLE{ PAGE_SIZE };
+    constexpr static uint32_t OFFSET_KEY_MAPPINGS{ 0x7000 };
+    constexpr static uint32_t OFFSET_HEADER{ 0x10000 };
+    constexpr static uint32_t OFFSET_CODE{ OFFSET_HEADER + PAGE_SIZE };
     
     constexpr static uint32_t CURRENT_VERSION{ 0 };
 

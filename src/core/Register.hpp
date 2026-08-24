@@ -27,14 +27,14 @@ namespace core {
     Register(const Register& other)
       : m_data( other.m_data ), m_fix_at_zero() {
     }
-    Register(Register&& other)
+    Register(Register&& other) noexcept
       : m_data{ other.m_data }, m_fix_at_zero{} {
     }
     Register& operator=(const Register& other) {
       m_data = other.m_data;
       return *this;
     }
-    Register& operator=(Register&& other) {
+    Register& operator=(Register&& other) noexcept {
       m_data = other.m_data;
       return *this;
     }

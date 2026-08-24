@@ -18,14 +18,14 @@ namespace emulator {
     try {
       m_processor.loadProgram(m_binary_path);
     }
-    catch (const core::exceptions::InvalidBinary& e) {
+    catch ([[maybe_unused]] const core::exceptions::InvalidBinary& ex) {
       std::println(std::cerr, "[ERROR] > Failed to load binary from {}", m_binary_path);
       return false;
     }
     return true;
   }
 
-  void Emulator::processorCallback(core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
+  void Emulator::processorCallback([[maybe_unused]] core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
     using enum core::instructions::Opcode;
     if (m_last_instruction.getOpcode() == ST) {
       m_app.PostEvent(ftxui::Event::Custom);

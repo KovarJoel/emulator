@@ -15,8 +15,8 @@ namespace emulator {
     ftxui::Canvas canvas{ core::Console::WIDTH * X_SCALE, core::Console::HEIGHT * Y_SCALE };
 
     std::lock_guard<std::mutex> lock{ m_state.memory.getMutex() };
-    for (int32_t y = 0; y < core::Console::HEIGHT; ++y) {
-      for (int32_t x = 0; x < core::Console::WIDTH; ++x) {
+    for (uint32_t y = 0; y < core::Console::HEIGHT; ++y) {
+      for (uint32_t x = 0; x < core::Console::WIDTH; ++x) {
         const auto& console_cell = m_state.memory.getConsole().cells[y * core::Console::WIDTH + x]; 
 
         ftxui::Cell cell{};

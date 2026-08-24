@@ -6,6 +6,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <span>
 
 namespace core::instructions {
   class InstructionData {
@@ -15,15 +16,15 @@ namespace core::instructions {
     };
     using SourceMode = RegisterOrImmediate::SourceMode;
 
-    constexpr static size_t ENCODING_SIZE_BRANCH = 4;
-    constexpr static size_t ENCODING_SIZE_MIN = 3;
-    constexpr static size_t ENCODING_SIZE_IMMEDIATE = 3;
+    constexpr static uint32_t ENCODING_SIZE_BRANCH = 4;
+    constexpr static uint32_t ENCODING_SIZE_MIN = 3;
+    constexpr static uint32_t ENCODING_SIZE_IMMEDIATE = 3;
 
-    constexpr static size_t ENCODING_WIDTH_OPCODE = 8;
-    constexpr static size_t ENCODING_WIDTH_WIDTH = 2;
-    constexpr static size_t ENCODING_WIDTH_REGISTER_ADDRESS = 4;
-    constexpr static size_t ENCODING_WIDTH_SOURCE_MODE = 1;
-    constexpr static size_t ENCODING_WIDTH_IMMEDIATE = ENCODING_SIZE_IMMEDIATE * 8;
+    constexpr static uint32_t ENCODING_WIDTH_OPCODE = 8;
+    constexpr static uint32_t ENCODING_WIDTH_WIDTH = 2;
+    constexpr static uint32_t ENCODING_WIDTH_REGISTER_ADDRESS = 4;
+    constexpr static uint32_t ENCODING_WIDTH_SOURCE_MODE = 1;
+    constexpr static uint32_t ENCODING_WIDTH_IMMEDIATE = ENCODING_SIZE_IMMEDIATE * 8;
 
   public:
     InstructionData();
@@ -34,7 +35,7 @@ namespace core::instructions {
     uint32_t getDestRegisterAddr() const;
     const std::array<RegisterOrImmediate, 2>& getSources() const;
 
-    size_t getEncodingSize() const;
+    uint32_t getEncodingSize() const;
     std::vector<std::byte> encode() const;
 
     void decode(std::span<const std::byte> data);

@@ -16,7 +16,7 @@
 using namespace core;
 
 namespace {
-  constexpr std::array<char, 3 * Memory::PAGE_SIZE> valid_binary{
+  constexpr std::array<unsigned char, 3 * Memory::PAGE_SIZE> valid_binary{
     'e', 'm', 'u', 'l', 'a', 't', 'o', 'r',
     0x00, 0x00, 0x00, 0x00,
     0x00, 0x10, 0x01, 0x00,
@@ -143,7 +143,7 @@ TEST_CASE("Load Program", "[Memory]") {
     CHECK_NOTHROW(memory.loadProgram(valid_binary_span));
 
     std::ofstream file(path, std::ios::binary);
-    file.write(valid_binary.data(), valid_binary.size());
+    file.write(reinterpret_cast<const char*>(valid_binary.data()), valid_binary.size());
   }
   CHECK_NOTHROW(memory.loadProgram(path));
 

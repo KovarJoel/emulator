@@ -44,7 +44,7 @@ namespace assembler {
           Branch branch{};
           branch.name = std::get<Parser::BranchLabel>(m_parser_tokens[i].token).label;
           m_branches[function.name].push_back(m_parser_tokens[i]);
-          branch.instruction_id = function.instructions.size();
+          branch.instruction_id = static_cast<uint32_t>(function.instructions.size());
 
           last_branch_index = i;
 

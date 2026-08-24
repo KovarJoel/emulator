@@ -43,7 +43,7 @@ namespace assembler {
     for (auto& function : m_ir_data.functions) {
       function.address = current_pc;
 
-      const uint32_t prev_funcs_instructions_count = instructions.size(); 
+      const size_t prev_funcs_instructions_count = instructions.size(); 
 
       for (auto& inst : function.instructions) {
         for (auto& label : function.branches) {
@@ -172,7 +172,7 @@ namespace assembler {
 
     header.code_begin = core::Memory::OFFSET_CODE;
     header.entry_point = main_address;
-    header.data_begin = header.code_begin + code_size + core::Memory::PAGE_SIZE;
+    header.data_begin = header.code_begin + static_cast<uint32_t>(code_size) + core::Memory::PAGE_SIZE;
     header.data_begin = header.data_begin - header.data_begin % core::Memory::PAGE_SIZE;
     header.ram_begin = header.data_begin + data_size + core::Memory::PAGE_SIZE;
     header.ram_begin = header.ram_begin - header.ram_begin % core::Memory::PAGE_SIZE;
@@ -191,7 +191,7 @@ namespace assembler {
         case IRGenerator::Instruction::Width::Word:     element_size = 4; break;
       }
 
-      data_size += element_size * var.initializer.size();
+      data_size += element_size * static_cast<uint32_t>(var.initializer.size());
     }
 
     return data_size;
@@ -225,7 +225,7 @@ namespace assembler {
         std::memcpy(data.data() + (data.size() - element_size), &value, element_size);
       }
 
-      address += element_size * var.initializer.size();
+      address += element_size * static_cast<uint32_t>(var.initializer.size());
     }
 
     return data;

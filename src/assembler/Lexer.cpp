@@ -72,7 +72,7 @@ namespace assembler {
 
     if (line[column_index] == '0' && column_index + 1 < line.size() && isBaseSymbol(line[column_index + 1])) {
       number_begin = column_index + 2;
-      base = std::tolower(line[column_index + 1]);
+      base = static_cast<char>(std::tolower(static_cast<unsigned char>(line[column_index + 1])));
     }
 
     if (line.size() == number_begin) {
@@ -181,7 +181,7 @@ namespace assembler {
     m_tokens.clear();
 
     size_t line_index = 0;
-    for (size_t line_index = 0; line_index < m_assembler_data.lines.size(); ++line_index) {
+    for (; line_index < m_assembler_data.lines.size(); ++line_index) {
       runOnLine(line_index);
       m_tokens.emplace_back(TokenType::NewLine, "\n", line_index, m_assembler_data.lines[line_index].size() + 1);
     }

@@ -7,8 +7,8 @@
 namespace core {
   class Console {
   public:
-    constexpr static size_t HEIGHT{ 42 };
-    constexpr static size_t WIDTH{ 128 };
+    constexpr static uint32_t HEIGHT{ 42 };
+    constexpr static uint32_t WIDTH{ 128 };
 
     struct Position {
       int32_t x{};

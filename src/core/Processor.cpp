@@ -28,7 +28,7 @@ namespace core {
         callback(m_state, instruction.getData());
         instruction.execute(m_state);
       }
-    } catch(const exceptions::Halt& ex) {}
+    } catch([[maybe_unused]] const exceptions::Halt& ex) {}
   }
 
   void Processor::initializeRegisters() {

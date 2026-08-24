@@ -39,12 +39,12 @@ namespace core::instructions {
     return m_sources;
   }
 
-  size_t InstructionData::getEncodingSize() const {
+  uint32_t InstructionData::getEncodingSize() const {
     if (opcodeGetType(m_opcode) == OpcodeType::Branch) {
       return ENCODING_SIZE_BRANCH;
     }
     else {
-      size_t immediates_count = 0;
+      uint32_t immediates_count = 0;
       for (const auto& src : m_sources) {
         if (src.getSourceMode() == RegisterOrImmediate::SourceMode::Immediate) {
           ++immediates_count;
@@ -71,7 +71,7 @@ namespace core::instructions {
     data <<= ENCODING_WIDTH_REGISTER_ADDRESS;
     data |= static_cast<uint16_t>(m_dest_register_addr);
     
-    for (int immediate_count = 0; const auto& src : m_sources) {
+    for (uint32_t immediate_count = 0; const auto& src : m_sources) {
       data <<= ENCODING_WIDTH_REGISTER_ADDRESS;
       if (src.getSourceMode() == SourceMode::Register) {
         data |= static_cast<uint16_t>(src.getRegisterAddress());

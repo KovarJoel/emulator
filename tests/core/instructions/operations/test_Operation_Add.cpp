@@ -20,7 +20,7 @@ namespace {
   ProcessorState state{};
   std::mt19937 random_engine{};
   std::uniform_int_distribution int_distribution{ INT_MIN / 4, INT_MAX / 4 };
-  std::uniform_int_distribution register_distribution{ 1, 10 };
+  std::uniform_int_distribution<uint32_t> register_distribution{ 1, 10 };
   std::uniform_int_distribution bool_distribution{ 0, 1 };
 
   template <EmulatorType T>
@@ -31,7 +31,7 @@ namespace {
       if (bool_distribution(random_engine)) {
         sources[i].setImmediateValue(values[i]);
       } else {
-        size_t register_addr = 0;
+        uint32_t register_addr = 0;
         do {
           register_addr = register_distribution(random_engine);
         } while (i && sources[i - 1].getSourceMode() == InstructionData::SourceMode::Register
@@ -55,8 +55,8 @@ namespace {
 }
 
 TEST_CASE("Random additions without overflow", "[Instructions::Operations::Add]") {
-  for (size_t i = 0; i < 20; ++i) {
-    const size_t dest_addr = register_distribution(random_engine);
+  for (uint32_t i = 0; i < 20; ++i) {
+    const uint32_t dest_addr = register_distribution(random_engine);
     const int value1 = int_distribution(random_engine);
     const int value2 = int_distribution(random_engine);
     
@@ -68,14 +68,14 @@ TEST_CASE("Random additions without overflow", "[Instructions::Operations::Add]"
     CHECK(state.registers[dest_addr].get<int32_t>() == sum);
 
     CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Zero) == (sum == 0));
-    CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Sign) == sum < 0);
+    CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Sign) == (sum < 0));
     
     const int min = std::min(value1, value2);
     const int max = std::max(value1, value2);
     CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Carry) == 
-      (value1 < 0 && value2 < 0 || min < 0 && max > 0 && -max <= min)   
+      ((value1 < 0 && value2 < 0) || (min < 0 && max > 0 && -max <= min))   
     );
-    CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow) == 0);
+    CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow) == false);
   }
 }
 

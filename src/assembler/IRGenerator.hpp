@@ -25,7 +25,7 @@ namespace assembler {
 
     struct Branch {
       std::string name{};
-      uint32_t instruction_id{};
+      size_t instruction_id{};
       uint32_t address{};
     };
 
