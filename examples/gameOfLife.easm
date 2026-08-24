@@ -1,0 +1,265 @@
+segment: code
+
+function main:
+    ADD   r1, r0, $cells
+    ADD   r12, r15, 12
+    JMP   generateInitialCells
+
+  loop:
+  draw:
+    LD    r1, $active_cells_index(r0)
+    ADD   r2, r0, 5376      # offset = 128 * 42
+    MUL   r2, r2, r1        # offset = active_cells_index == 0 ? 0 : 5376
+
+    ADD   r1, $cells, r2
+    ADD   r12, r15, 12
+    JMP   drawCells
+
+  apply_rules:
+    LD    r1, $active_cells_index(r0)
+    ADD   r2, r0, 5376      # offset = 128 * 42
+    
+    MUL   r3, r2, r1        # active_offset = active_cells_index == 0 ? 0 : 5376
+    
+    XOR   r1, r1, 1
+    MUL   r4, r2, r1        # inactive_offset = active_cells_index == 1 ? 0 : 5376
+
+    ADD   r1, $cells, r3
+    ADD   r2, $cells, r4
+    ADD   r12, r15, 12
+    JMP   applyRules
+
+  swap_cells:
+    LD    r1, $active_cells_index(r0)
+    XOR   r1, r1, 1                     # active_cells_index = !active_cells_index
+    ST    $active_cells_index(r0), r1
+
+  end:
+    JMP   loop
+
+# arg1: ptr to active cells
+# arg2: x
+# arg3: y
+# ret1: alive neighbours count
+function countAliveNeighbours:
+    ADD   r7, r0, r0        # count = 0
+    ADD   r2, r2, 1         # last x = input x + 1
+    ADD   r3, r3, 1         # last y = input y + 1
+
+    SUB   r4, r3, 2         # y = last y - 2
+    
+  outer:
+    SUB   r5, r2, 2         # x = last x - 2
+
+  inner:
+    SUB   r0, r5, r0        # if (x < 0)
+    BLT   loop_increment    #   continue
+    SUB   r0, r5, 128       # if (x >= 128)
+    BGE   loop_increment    #   continue
+
+    SUB   r0, r4, r0        # if (y < 0)
+    BLT   loop_increment    #   continue
+    SUB   r0, r4, 42        # if (y >= 42)
+    BGE   loop_increment    #   continue
+
+    SUB   r6, r2, 1
+    SUB   r0, r5, r6        # if (x != input x)
+    BNE   check_alive
+
+    SUB   r6, r3, 1
+    SUB   r0, r4, r6        # if (y == input y)
+    BE    loop_increment
+
+  check_alive:
+    MUL   r6, r4, 128
+    ADD   r6, r6, r5        # index = y * 128 + x
+    LD.B  r6, (r1)[r6]      # cell = cells[index]
+    BE    loop_increment    # if (!cell) continue
+
+    ADD   r7, r7, 1         # count = cout + 1
+
+  loop_increment:
+    ADD   r5, r5, 1         # x = x + 1
+    SUB   r0, r5, r2        # if (x <= last x)
+    BLE   inner             #   goto inner
+
+    ADD   r4, r4, 1         # y = y + 1
+    SUB   r0, r4, r3        # if (y <= last y)
+    BLE   outer             #   goto outer
+
+    ADD   r1, r0, r7        # ret1 = count
+    JMP   r12               # ret
+
+# arg1: ptr to active cells
+# arg2: ptr to inactive cells
+# arg3: x
+# arg4: y
+function applyRulesToCell:
+    SUB   r13, r13, 20
+    ST    00(r13), r1
+    ST    04(r13), r2
+    ST    08(r13), r3
+    ST    12(r13), r4
+    ST    16(r13), r12
+
+    ADD   r2, r0, r3
+    ADD   r3, r0, r4
+    ADD   r12, r15, 12
+    JMP   countAliveNeighbours
+    ADD   r5, r0, r1              # count = countAliveNeighbours()
+
+    LD    r1, 00(r13)
+    LD    r2, 04(r13)
+    LD    r3, 08(r13)
+    LD    r4, 12(r13)
+    LD    r12, 16(r13)
+    ADD   r13, r13, 20
+
+    MUL   r6, r4, 128
+    ADD   r6, r6, r3      # index = y * 128 + x
+    
+    LD.B  r0, (r1)[r6]    # cell = alive cells[index]
+    BE    dead            # if (cell == 0) goto dead
+
+  alive:
+    SUB   r0, r5, 2       # if (count < 2)
+    BLT   set_dead        #   goto set_dead
+    SUB   r0, r5, 3       # else if (count > 3)
+    BGT   set_dead        #   goto set_dead
+    JMP   set_alive       # else goto set_alive
+
+  dead:
+    SUB   r0, r5, 3       # if (count == 3)
+    BE    set_alive       #   goto set_alive
+    JMP   set_dead        # else goto set_dead
+
+  set_alive:
+    ADD   r7, r0, 0x23
+    ST.B  (r2)[r6], r7    # inactive cells[index] = '#'
+    JMP   end
+
+  set_dead:
+    ST.B  (r2)[r6], r0    # inactive cells[index] = 0
+    JMP   end
+
+  end:
+    JMP   r12
+
+# arg1: ptr to active cells
+# arg2: ptr to inactive cells
+function applyRules:
+    ADD   r3, r0, r0          # y = 0
+  
+  outer:
+    ADD   r4, r0, r0          # x = 0
+    
+  inner:
+    ADD   r5, r0, r3
+    MUL   r5, r5, 128
+    ADD   r5, r5, r4          # index = y * 128 + x
+
+  body:
+    SUB   r13, r13, 24
+    ST    00(r13), r1
+    ST    04(r13), r2
+    ST    08(r13), r3
+    ST    12(r13), r4
+    ST    16(r13), r5
+    ST    20(r13), r12
+    
+    ADD   r5, r0, r3
+
+    ADD   r3, r0, r4
+    ADD   r4, r0, r5   
+    ADD   r12, r15, 12
+    JMP   applyRulesToCell
+
+    LD    r1, 00(r13)
+    LD    r2, 04(r13)
+    LD    r3, 08(r13)
+    LD    r4, 12(r13)
+    LD    r5, 16(r13)
+    LD    r12, 20(r13)
+    ADD   r13, r13, 24
+
+  increment:
+    ADD   r4, r4, 1           # x = x + 1
+    SUB   r0, r4, 128         # if (x < 128)
+    BLT   inner               #   goto inner
+
+    ADD   r3, r3, 1           # y = y + 1
+    SUB   r0, r3, 42          # if (y < 42)
+    BLT   outer               #   goto outer
+
+    JMP   r12                 # ret
+
+# arg1: ptr to cells
+function generateInitialCells:
+    ADD   r2, r0, r0          # y = 0
+  
+  outer:
+    ADD   r3, r0, r0          # x = 0
+    
+  inner:
+    ADD   r4, r0, r2
+    MUL   r4, r4, 128
+    ADD   r4, r4, r3          # index = y * 128 + x
+
+    RAND  r0, r0, 2           # if (rand() % 3 == 0)
+    BE    alive               #   goto alive
+
+  dead:
+    ADD   r5, r0, r0          # char = 0
+    JMP   store
+
+  alive:
+    ADD   r5, r0, 0x23        # char = '#'
+
+  store:
+    ST.B  (r1)[r4], r5        # cells[index] = char
+
+  increment:
+    ADD   r3, r3, 1           # x = x + 1
+    SUB   r0, r3, 128         # if (x < 128)
+    BLT   inner               #   goto inner
+
+    ADD   r2, r2, 1           # y = y + 1
+    SUB   r0, r2, 42          # if (y < 42)
+    BLT   outer               #   goto outer
+
+    JMP   r12                 # ret
+
+
+# arg1: ptr to cells
+function drawCells:
+    ADD   r2, r0, r0          # y = 0
+  
+  outer:
+    ADD   r3, r0, r0          # x = 0
+    
+  inner:
+    ADD   r4, r0, r2
+    MUL   r4, r4, 128
+    ADD   r4, r4, r3          # index = y * 128 + x
+
+    MUL   r5, r4, 4           # console offset = index * 4
+    
+    ADD   r6, r0, 0xFFFFFF    # color = white
+    ST    0x1000(r5), r6
+
+    LD.B  r6, (r1)[r4]        # cell = cells[index]
+    ST.B  0x1003(r5), r6
+
+    ADD   r3, r3, 1           # x = x + 1
+    SUB   r0, r3, 128         # if (x < 128)
+    BLT   inner               #   goto inner
+
+    ADD   r2, r2, 1           # y = y + 1
+    SUB   r0, r2, 42          # if (y < 42)
+    BLT   outer               #   goto outer
+
+    JMP   r12                 # ret
+
+segment: data
+    active_cells_index = 0
+    cells.B = 0
