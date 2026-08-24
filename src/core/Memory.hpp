@@ -38,15 +38,16 @@ namespace core {
 
     constexpr static std::align_val_t MAX_ALIGNMENT{ std::max({
       alignof(Console),
-      alignof(Header)
+      alignof(Header),
+      alignof(KeyEvents)
     })};
 
   public:
     Memory();
     Memory(const Memory& other);
-    Memory(Memory&& other);
+    Memory(Memory&& other) noexcept;
     Memory& operator=(const Memory& other);
-    Memory& operator=(Memory&& other);
+    Memory& operator=(Memory&& other) noexcept;
     ~Memory() = default;
 
     auto& getConsole(this auto&& self) {
@@ -94,11 +95,19 @@ namespace core {
     bool operator==(const Memory& other) const;
 
   private:
+    static std::byte* allocate();
     static bool validHeader(const Header& header);
     ptrdiff_t getComponentOffset(void* component) const;
 
   private:
-    std::unique_ptr<std::byte[]> m_memory;
+    struct Deleter {
+      void operator()(std::byte* ptr) const noexcept {
+        ::operator delete[] (ptr, MAX_ALIGNMENT);
+      }
+    };
+
+  private:
+    std::unique_ptr<std::byte[], Deleter> m_memory;
     Console* m_console;
     Header* m_header;
     KeyEvents* m_key_events;

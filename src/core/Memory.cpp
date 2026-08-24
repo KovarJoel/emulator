@@ -5,27 +5,29 @@
 #include <iterator>
 #include <memory>
 #include <vector>
+#include <new>
 
 namespace core {
   Memory::Memory()
-    : m_memory{ new (MAX_ALIGNMENT) std::byte[RAM_SIZE]{} },
+    : m_memory{ allocate() },
       m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
       m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
       m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
   }
 
   Memory::Memory(const Memory& other)
-    : m_memory{ new (MAX_ALIGNMENT) std::byte[RAM_SIZE]{} },
+    : m_memory{ allocate() },
       m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
       m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
       m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
     std::memcpy(m_memory.get(), other.m_memory.get(), RAM_SIZE);
   }
 
-  Memory::Memory(Memory&& other)
+  Memory::Memory(Memory&& other) noexcept
     : m_memory{ std::move(other.m_memory) },
       m_console{ other.m_console },
-      m_header{ other.m_header } {
+      m_header{ other.m_header },
+      m_key_events{ other.m_key_events } {
     other.m_console = nullptr;
     other.m_header = nullptr;
     other.m_key_events = nullptr;
@@ -36,7 +38,7 @@ namespace core {
     return *this;
   }
 
-  Memory& Memory::operator=(Memory&& other) {
+  Memory& Memory::operator=(Memory&& other) noexcept {
     m_memory = std::move(other.m_memory);
     m_console = other.m_console;
     m_header = other.m_header;
@@ -78,6 +80,12 @@ namespace core {
       return false;
     }
     return std::memcmp(m_memory.get(), other.m_memory.get(), RAM_SIZE) == 0;
+  }
+
+  std::byte* Memory::allocate() {
+    auto ptr = static_cast<std::byte*>(::operator new[] (RAM_SIZE, MAX_ALIGNMENT));
+    std::memset(ptr, 0x00, RAM_SIZE);
+    return ptr;
   }
 
   bool Memory::validHeader(const Header& header) {
