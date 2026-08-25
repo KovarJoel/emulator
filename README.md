@@ -2,6 +2,10 @@
 
 A small C++23 emulator and assembler for a custom CPU architecture.
 
+This video was generated using Conway's Game of Life
+written in assembly for this very emulator.
+![logo](./multimedia/emulator.gif)
+
 ## Requirements
 - Git
 - Cmake
