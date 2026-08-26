@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstring>
 #include <utility>
+#include <type_traits>
 
 namespace core {
   class Register {
@@ -52,14 +53,10 @@ namespace core {
     void set(T value) {
       if (m_fix_at_zero) return;
 
-      std::memcpy(m_data.data(), &value, sizeof value);
+      using Extended = std::conditional_t<std::is_signed_v<T>, std::int32_t, std::uint32_t>;
+      const Extended extended = value;
 
-      if constexpr (sizeof(T) < sizeof m_data) {
-        const std::byte sign_extended = static_cast<std::byte>(value < 0 ? 0xFF : 0x00);
-        for (size_t i = sizeof value; i < sizeof m_data; ++i) {
-          m_data[i] = sign_extended;
-        }
-      }
+      std::memcpy(m_data.data(), &extended, sizeof extended);
     }
 
     bool getBit(size_t index) const {
