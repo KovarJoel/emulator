@@ -5,12 +5,10 @@
 #include <iostream>
 
 int main(int argc, const char** argv) {
-
   try {
-    assembler::Assembler assembler{ argc, argv };
+    assembler::Assembler assembler { argc, argv };
     assembler.run();
-  }
-  catch (const assembler::Error& error) {
+  } catch (const assembler::Error& error) {
     std::cerr << error;
     return EXIT_FAILURE;
   }

@@ -5,28 +5,26 @@
 #include "AssemblerData.hpp"
 #include "AssemblerError.hpp"
 
-#include "core/Instructions/Operations.hpp"
 #include "core/Instructions/InstructionData.hpp"
+#include "core/Instructions/Operations.hpp"
 
-#include <string>
 #include <cstddef>
+#include <span>
+#include <string>
 #include <variant>
 #include <vector>
-#include <span>
 
 namespace assembler {
   class Parser {
   public:
     struct Segment {
-      enum class Type {
-        None, Code, Data
-      } type{ Type::None };
+      enum class Type { None, Code, Data } type { Type::None };
     };
-    
+
     struct FunctionLabel {
       std::string label;
     };
-    
+
     struct BranchLabel {
       std::string label;
     };
@@ -34,7 +32,7 @@ namespace assembler {
     struct BranchTarget {
       std::string label;
     };
-    
+
     struct VariableReference {
       std::string name;
     };
@@ -42,20 +40,20 @@ namespace assembler {
     struct VariableDefinition {
       std::string name;
     };
-    
+
     struct Mnemonic {
       core::instructions::Opcode opcode;
     };
-    
+
     struct WidthSpecifier {
       using Width = core::instructions::InstructionData::Width;
       Width width;
     };
-    
+
     struct Register {
       uint32_t address;
     };
-    
+
     struct Immediate {
       uint32_t value;
     };
@@ -63,12 +61,21 @@ namespace assembler {
     struct NewLine {};
 
     struct EndOfFile {};
-    
+
     using TokenVariant = std::variant<
-      Segment, FunctionLabel, BranchLabel, BranchTarget, VariableReference, VariableDefinition,
-      Mnemonic, WidthSpecifier, Register, Immediate, NewLine, EndOfFile
-    >;
-    
+      Segment,
+      FunctionLabel,
+      BranchLabel,
+      BranchTarget,
+      VariableReference,
+      VariableDefinition,
+      Mnemonic,
+      WidthSpecifier,
+      Register,
+      Immediate,
+      NewLine,
+      EndOfFile>;
+
     struct Token {
       TokenVariant token;
       size_t line;
@@ -76,17 +83,17 @@ namespace assembler {
 
       friend std::ostream& operator<<(std::ostream& out, const Token& token);
     };
-    
+
   public:
     Parser(const AssemblerData& assembler_data);
 
     const std::vector<Token>& run(std::span<const Lexer::Token> lexer_tokens);
 
   private:
-    constexpr static const char* SEGMENT = "segment";
-    constexpr static const char* SEGMENT_CODE = "code";
-    constexpr static const char* SEGMENT_DATA = "data";
-    constexpr static const char* FUNCTION = "function";
+    static constexpr const char* SEGMENT = "segment";
+    static constexpr const char* SEGMENT_CODE = "code";
+    static constexpr const char* SEGMENT_DATA = "data";
+    static constexpr const char* FUNCTION = "function";
 
   private:
     void parseSegmentLine();
@@ -94,14 +101,14 @@ namespace assembler {
     void parseBranch();
     void parseVariableLine();
     void parseInstructionLine();
-    
+
     void parseInitializerLine();
     void parseOperandsLine(core::instructions::Opcode opcode);
     void parseMemoryTransferOperands();
     void parseRegisterOperand();
     void parseOperandSeparator();
     void parseWidthSpecifier();
-    
+
     void parseStoreOperandsLine();
     void parseLoadOperandsLine();
     void parseJumpOperandsLine();
@@ -120,11 +127,11 @@ namespace assembler {
 
   private:
     const AssemblerData& m_assembler_data;
-    std::span<const Lexer::Token> m_lexer_tokens{};
+    std::span<const Lexer::Token> m_lexer_tokens {};
 
-    std::vector<Token> m_tokens{};
-    std::span<const Lexer::Token> m_remaining_lexer_tokens{};
+    std::vector<Token> m_tokens {};
+    std::span<const Lexer::Token> m_remaining_lexer_tokens {};
 
-    Segment m_current_segment{ Parser::Segment::Type::None };
+    Segment m_current_segment { Parser::Segment::Type::None };
   };
 }

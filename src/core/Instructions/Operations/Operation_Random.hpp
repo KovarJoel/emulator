@@ -10,6 +10,6 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const;
 
   private:
-    static inline std::mt19937 m_generator{ std::random_device{}() };
+    inline static std::mt19937 m_generator { std::random_device {}() };
   };
 }

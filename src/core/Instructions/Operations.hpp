@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <string_view>
 
+// clang-format off
+
 // mnemonic, operation type, operation class, dest operands count, src operands count, init
 #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(X) \
   X(LD,     OpcodeType::Memory,       Load,                       1,  2,  =1)\

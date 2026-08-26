@@ -17,15 +17,17 @@ namespace emulator {
 
     try {
       m_processor.loadProgram(m_binary_path);
-    }
-    catch ([[maybe_unused]] const core::exceptions::InvalidBinary& ex) {
+    } catch ([[maybe_unused]] const core::exceptions::InvalidBinary& ex) {
       std::println(std::cerr, "[ERROR] > Failed to load binary from {}", m_binary_path);
       return false;
     }
     return true;
   }
 
-  void Emulator::processorCallback([[maybe_unused]] core::ProcessorState& state, const core::instructions::InstructionData& instruction) {
+  void Emulator::processorCallback(
+    [[maybe_unused]] core::ProcessorState& state,
+    const core::instructions::InstructionData& instruction
+  ) {
     using enum core::instructions::Opcode;
     if (m_last_instruction.getOpcode() == ST) {
       m_app.PostEvent(ftxui::Event::Custom);
@@ -35,14 +37,16 @@ namespace emulator {
   }
 
   void Emulator::run() {
-    if (m_binary_path.empty()) return;
+    if (m_binary_path.empty()) {
+      return;
+    }
 
-    std::jthread app{[&]{
-      m_app.Loop(m_console);
-    }};
-    std::jthread processor{[&]{
-      m_processor.run([this](auto&& state, auto&& instruction){ this->processorCallback(state, instruction); });
+    std::jthread app { [&] { m_app.Loop(m_console); } };
+    std::jthread processor { [&] {
+      m_processor.run([this](auto&& state, auto&& instruction) {
+        this->processorCallback(state, instruction);
+      });
       m_app.Exit();
-    }};
+    } };
   }
 }

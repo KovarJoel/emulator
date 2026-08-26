@@ -1,13 +1,13 @@
 #include "IRGenerator.hpp"
 #include "assembler/AssemblerError.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <variant>
-#include <algorithm>
 
 namespace assembler {
   IRGenerator::IRGenerator(const AssemblerData& assembler_data)
-    : m_assembler_data{ assembler_data } {}
+    : m_assembler_data { assembler_data } {}
 
   const IRGenerator::Data& IRGenerator::run(std::span<const Parser::Token> parser_tokens) {
     m_data = {};
@@ -33,15 +33,15 @@ namespace assembler {
 
       const size_t function_label_index = i;
 
-      Function function{};
+      Function function {};
       function.name = std::get<Parser::FunctionLabel>(m_parser_tokens[i].token).label;
       updateFunctionNames(m_parser_tokens[i]);
       ++i;
 
-      size_t last_branch_index{};
+      size_t last_branch_index {};
       while (true) {
         if (std::holds_alternative<Parser::BranchLabel>(m_parser_tokens[i].token)) {
-          Branch branch{};
+          Branch branch {};
           branch.name = std::get<Parser::BranchLabel>(m_parser_tokens[i].token).label;
           m_branches[function.name].push_back(m_parser_tokens[i]);
           branch.instruction_id = static_cast<uint32_t>(function.instructions.size());
@@ -50,45 +50,41 @@ namespace assembler {
 
           function.branches.push_back(std::move(branch));
           ++i;
-        }
-        else if (std::holds_alternative<Parser::Mnemonic>(m_parser_tokens[i].token)) {
+        } else if (std::holds_alternative<Parser::Mnemonic>(m_parser_tokens[i].token)) {
           function.instructions.push_back(getInstruction(function, i));
-        }
-        else if (std::holds_alternative<Parser::NewLine>(m_parser_tokens[i].token)) {
+        } else if (std::holds_alternative<Parser::NewLine>(m_parser_tokens[i].token)) {
           ++i;
-        }
-        else {
+        } else {
           --i;
           break;
         }
-
       }
 
-      if (!function.branches.empty() && function.branches.back().instruction_id == function.instructions.size()) {
-        throw Error {
-          ErrorType::IRGenerator_VoidBranch,
-          m_assembler_data.input_file_path,
-          m_assembler_data.lines[m_parser_tokens[last_branch_index].line],
-          m_parser_tokens[last_branch_index].line + 1,
-          m_parser_tokens[last_branch_index].column + 1
-        };
+      if (
+        !function.branches.empty()
+        && function.branches.back().instruction_id == function.instructions.size()
+      )
+      {
+        throw Error { ErrorType::IRGenerator_VoidBranch,
+                      m_assembler_data.input_file_path,
+                      m_assembler_data.lines[m_parser_tokens[last_branch_index].line],
+                      m_parser_tokens[last_branch_index].line + 1,
+                      m_parser_tokens[last_branch_index].column + 1 };
       }
 
       if (function.instructions.empty()) {
-        throw Error{
-          ErrorType::IRGenerator_EmptyFunction,
-          m_assembler_data.input_file_path,
-          m_assembler_data.lines[m_parser_tokens[function_label_index].line],
-          m_parser_tokens[function_label_index].line + 1,
-          m_parser_tokens[function_label_index].column + 1
-        };
+        throw Error { ErrorType::IRGenerator_EmptyFunction,
+                      m_assembler_data.input_file_path,
+                      m_assembler_data.lines[m_parser_tokens[function_label_index].line],
+                      m_parser_tokens[function_label_index].line + 1,
+                      m_parser_tokens[function_label_index].column + 1 };
       }
 
       m_data.functions.push_back(std::move(function));
     }
 
     if (!m_function_names.contains("main")) {
-      throw Error{ ErrorType::IRGenerator_MissingMain, m_assembler_data.input_file_path };
+      throw Error { ErrorType::IRGenerator_MissingMain, m_assembler_data.input_file_path };
     }
   }
 
@@ -96,20 +92,18 @@ namespace assembler {
     const auto& new_name = std::get<Parser::FunctionLabel>(token.token).label;
 
     if (m_function_names.contains(new_name)) {
-      throw Error {
-        ErrorType::IRGenerator_DuplicateFunction,
-        m_assembler_data.input_file_path,
-        m_assembler_data.lines[token.line],
-        token.line + 1,
-        token.column + 1
-      };
-    }    
-    
+      throw Error { ErrorType::IRGenerator_DuplicateFunction,
+                    m_assembler_data.input_file_path,
+                    m_assembler_data.lines[token.line],
+                    token.line + 1,
+                    token.column + 1 };
+    }
+
     m_function_names.insert(new_name);
   }
 
   IRGenerator::Instruction IRGenerator::getInstruction(const Function& function, size_t& index) {
-    Instruction instruction{};
+    Instruction instruction {};
 
     instruction.opcode = std::get<Parser::Mnemonic>(m_parser_tokens[index].token).opcode;
     ++index;
@@ -117,8 +111,7 @@ namespace assembler {
     if (std::holds_alternative<Parser::WidthSpecifier>(m_parser_tokens[index].token)) {
       instruction.width = std::get<Parser::WidthSpecifier>(m_parser_tokens[index].token).width;
       ++index;
-    }
-    else {
+    } else {
       instruction.width = Instruction::Width::Word;
     }
 
@@ -127,24 +120,23 @@ namespace assembler {
     return instruction;
   }
 
-  std::vector<IRGenerator::Operand> IRGenerator::getOperands(const Function& function, size_t& index) {
-    std::vector<IRGenerator::Operand> operands{};
-    
+  std::vector<IRGenerator::Operand> IRGenerator::getOperands(
+    const Function& function,
+    size_t& index
+  ) {
+    std::vector<IRGenerator::Operand> operands {};
+
     while (true) {
       if (std::holds_alternative<Parser::Register>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::Register>(m_parser_tokens[index].token));
-      }
-      else if (std::holds_alternative<Parser::Immediate>(m_parser_tokens[index].token)) {
+      } else if (std::holds_alternative<Parser::Immediate>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::Immediate>(m_parser_tokens[index].token));
-      }
-      else if (std::holds_alternative<Parser::BranchTarget>(m_parser_tokens[index].token)) {
+      } else if (std::holds_alternative<Parser::BranchTarget>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::BranchTarget>(m_parser_tokens[index].token));
         m_branch_targets[function.name].push_back(m_parser_tokens[index]);
-      }
-      else if (std::holds_alternative<Parser::VariableReference>(m_parser_tokens[index].token)) {
+      } else if (std::holds_alternative<Parser::VariableReference>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::VariableReference>(m_parser_tokens[index].token));
-      }
-      else {
+      } else {
         break;
       }
       ++index;
@@ -159,15 +151,14 @@ namespace assembler {
         continue;
       }
 
-      Variable variable{};
+      Variable variable {};
       variable.name = std::get<Parser::VariableDefinition>(m_parser_tokens[i].token).name;
       ++i;
 
       if (std::holds_alternative<Parser::WidthSpecifier>(m_parser_tokens[i].token)) {
         variable.width = std::get<Parser::WidthSpecifier>(m_parser_tokens[i].token).width;
         ++i;
-      }
-      else {
+      } else {
         variable.width = Variable::Width::Word;
       }
 
@@ -185,13 +176,11 @@ namespace assembler {
       for (const auto& branch_token : branches) {
         const auto& label = std::get<Parser::BranchLabel>(branch_token.token).label;
         if (m_function_names.contains(label)) {
-          throw Error{
-            ErrorType::IRGenerator_ShaddowingBranch,
-            m_assembler_data.input_file_path,
-            m_assembler_data.lines[branch_token.line],
-            branch_token.line + 1,
-            branch_token.column + 1
-          };
+          throw Error { ErrorType::IRGenerator_ShaddowingBranch,
+                        m_assembler_data.input_file_path,
+                        m_assembler_data.lines[branch_token.line],
+                        branch_token.line + 1,
+                        branch_token.column + 1 };
         }
       }
     }
@@ -200,16 +189,20 @@ namespace assembler {
       for (const auto& branch_token : branch_targets) {
         const auto& label = std::get<Parser::BranchTarget>(branch_token.token).label;
 
-        if (!m_function_names.contains(label) && !std::ranges::contains(m_branches[func_name], label, [](const auto& tk) {
-          return std::get<Parser::BranchLabel>(tk.token).label;
-        })) {
-          throw Error{
-            ErrorType::IRGenerator_UndefinedBranch,
-            m_assembler_data.input_file_path,
-            m_assembler_data.lines[branch_token.line],
-            branch_token.line + 1,
-            branch_token.column + 1
-          };
+        if (
+          !m_function_names.contains(label)
+          && !std::ranges::contains(
+            m_branches[func_name],
+            label,
+            [](const auto& tk) { return std::get<Parser::BranchLabel>(tk.token).label; }
+          )
+        )
+        {
+          throw Error { ErrorType::IRGenerator_UndefinedBranch,
+                        m_assembler_data.input_file_path,
+                        m_assembler_data.lines[branch_token.line],
+                        branch_token.line + 1,
+                        branch_token.column + 1 };
         }
       }
     }
@@ -224,9 +217,14 @@ namespace assembler {
           }
 
           const auto& variable_name = std::get<Parser::VariableReference>(operand).name;
-          if (!std::ranges::contains(m_data.variables, variable_name, [](auto&& var) { return var.name; })) {
+          if (!std::ranges::contains(
+                m_data.variables,
+                variable_name,
+                [](auto&& var) { return var.name; }
+              ))
+          {
             assert(!"undefined variable, implement better diagnostics");
-            throw Error{
+            throw Error {
               ErrorType::IRGenerator_UndefinedVariable,
               m_assembler_data.input_file_path,
             };

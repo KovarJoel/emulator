@@ -7,7 +7,7 @@ namespace core::instructions::operations {
   public:
     void execute(const InstructionData& data, ProcessorState& state) const {
       advancePC(data, state);
-      throw exceptions::Halt{};
+      throw exceptions::Halt {};
     }
   };
 }

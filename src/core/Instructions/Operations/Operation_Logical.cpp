@@ -2,9 +2,8 @@
 
 namespace core::instructions::operations {
   void And::execute(const InstructionData& data, ProcessorState& state) const {
-    const auto result =
-      data.getSources()[0].getValue(state.registers) &
-      data.getSources()[1].getValue(state.registers);
+    const auto result = data.getSources()[0].getValue(state.registers)
+                        & data.getSources()[1].getValue(state.registers);
 
     state.registers[data.getDestRegisterAddr()].set(result);
 
@@ -13,10 +12,9 @@ namespace core::instructions::operations {
   }
 
   void Or::execute(const InstructionData& data, ProcessorState& state) const {
-    const auto result = 
-      data.getSources()[0].getValue(state.registers) |
-      data.getSources()[1].getValue(state.registers);
-    
+    const auto result = data.getSources()[0].getValue(state.registers)
+                        | data.getSources()[1].getValue(state.registers);
+
     state.registers[data.getDestRegisterAddr()].set(result);
 
     updateFlagsZeroAndSign(result, state);
@@ -24,9 +22,8 @@ namespace core::instructions::operations {
   }
 
   void Xor::execute(const InstructionData& data, ProcessorState& state) const {
-    const auto result = 
-      data.getSources()[0].getValue(state.registers) ^
-      data.getSources()[1].getValue(state.registers);
+    const auto result = data.getSources()[0].getValue(state.registers)
+                        ^ data.getSources()[1].getValue(state.registers);
 
     state.registers[data.getDestRegisterAddr()].set(result);
 

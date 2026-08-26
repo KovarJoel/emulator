@@ -7,9 +7,7 @@
 namespace core::instructions {
   class RegisterOrImmediate {
   public:
-    enum class SourceMode {
-      Register, Immediate
-    };
+    enum class SourceMode { Register, Immediate };
 
   public:
     RegisterOrImmediate();

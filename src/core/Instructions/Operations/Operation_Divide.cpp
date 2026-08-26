@@ -8,11 +8,11 @@ namespace core::instructions::operations {
     const auto value2 = std::bit_cast<int32_t>(data.getSources()[1].getValue(state.registers));
 
     if (value2 == 0) {
-      throw exceptions::DivideByZero{};
+      throw exceptions::DivideByZero {};
     }
 
     const auto result = value1 / value2;
-    
+
     state.registers[data.getDestRegisterAddr()].set(result);
 
     updateFlagsZeroAndSign(result, state);
@@ -20,21 +20,18 @@ namespace core::instructions::operations {
   }
 
   void DivideUnsigned::execute(const InstructionData& data, ProcessorState& state) const {
-    const uint32_t value1 = data.getSources()[0].getValue(state.registers);      
+    const uint32_t value1 = data.getSources()[0].getValue(state.registers);
     const uint32_t value2 = data.getSources()[1].getValue(state.registers);
-    
+
     if (value2 == 0) {
-      throw exceptions::DivideByZero{};
+      throw exceptions::DivideByZero {};
     }
-    
+
     const uint32_t result = value1 / value2;
 
     state.registers[data.getDestRegisterAddr()].set(result);
 
-    state.registers.getFLAGS().setBit(
-      Register::FlagIndex::Zero,
-      result == 0
-    );
+    state.registers.getFLAGS().setBit(Register::FlagIndex::Zero, result == 0);
     advancePC(data, state);
   }
 }

@@ -7,8 +7,8 @@
 
 namespace core {
   struct ProcessorState {
-    Memory memory{};
-    RegisterBank registers{};
-    uint32_t cycle_count{};
+    Memory memory {};
+    RegisterBank registers {};
+    uint32_t cycle_count {};
   };
 }

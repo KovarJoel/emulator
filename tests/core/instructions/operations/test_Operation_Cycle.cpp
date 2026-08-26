@@ -13,12 +13,7 @@ using namespace core::instructions::operations;
 
 namespace {
   Instruction generateCycl(uint32_t dest_addr) {
-    const InstructionData data{
-      Opcode::CYCL,
-      InstructionData::Width::Word,
-      dest_addr,
-      {}
-    };
+    const InstructionData data { Opcode::CYCL, InstructionData::Width::Word, dest_addr, {} };
 
     Instruction inst;
     inst.setData(data);
@@ -29,8 +24,8 @@ namespace {
 TEST_CASE("Start, increment, wrap", "[Instructions::Operations::Cycle]") {
   ProcessorState state;
   CHECK(state.cycle_count == 0);
-  state.registers[1].set(0xDEADBEEF);
-  CHECK(state.registers[1].get<uint32_t>() == 0xDEADBEEF);
+  state.registers[1].set(0xDEAD'BEEF);
+  CHECK(state.registers[1].get<uint32_t>() == 0xDEAD'BEEF);
 
   auto inst = generateCycl(1);
   inst.execute(state);
@@ -52,5 +47,4 @@ TEST_CASE("Start, increment, wrap", "[Instructions::Operations::Cycle]") {
   CHECK(state.registers[1].get<uint32_t>() == UINT32_MAX);
   inst.execute(state);
   CHECK(state.registers[1].get<uint32_t>() == 0);
-
 }

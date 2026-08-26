@@ -3,13 +3,11 @@
 
 namespace core::instructions {
   Instruction::Instruction(const InstructionData& data)
-    : m_data{ data }, m_instruction{ internal::opcodeToInstructionVariant(m_data.getOpcode()) } {}
+    : m_data { data }, m_instruction { internal::opcodeToInstructionVariant(m_data.getOpcode()) } {}
 
   void Instruction::execute(ProcessorState& state) const {
     try {
-      std::visit([&](auto& operation) {
-        operation.execute(m_data, state);
-      }, m_instruction);
+      std::visit([&](auto& operation) { operation.execute(m_data, state); }, m_instruction);
     } catch (const exceptions::Halt&) {
       ++state.cycle_count;
       throw;

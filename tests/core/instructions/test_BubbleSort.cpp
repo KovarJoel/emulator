@@ -1,25 +1,32 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "core/Instructions/InstructionData.hpp"
 #include "core/Instructions/RegisterOrImmediate.hpp"
 #include "core/Processor.hpp"
-#include "core/Instructions/InstructionData.hpp"
 
-#include <array>
-#include <limits>
-#include <vector>
-#include <span>
-#include <cstddef>
 #include <algorithm>
+#include <array>
+#include <cstddef>
+#include <limits>
+#include <span>
+#include <vector>
 
 using namespace core;
 using namespace core::instructions;
 
 namespace {
-  constexpr uint32_t BASE_ADDRESS = 0x20000;
+  constexpr uint32_t BASE_ADDRESS = 0x2'0000;
   constexpr uint32_t VALUE_COUNT = 10;
-  constexpr std::array<int32_t, VALUE_COUNT> VALUES{
-    -1, 10, 0, std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max(), 23, -523532, 10, 53252, 2
-  };
+  constexpr std::array<int32_t, VALUE_COUNT> VALUES { -1,
+                                                      10,
+                                                      0,
+                                                      std::numeric_limits<int32_t>::min(),
+                                                      std::numeric_limits<int32_t>::max(),
+                                                      23,
+                                                      -523'532,
+                                                      10,
+                                                      53'252,
+                                                      2 };
 
   constexpr uint32_t ENTRY_POINT = Memory::OFFSET_CODE;
   constexpr uint32_t LABEL_OUTER = ENTRY_POINT + 2 * (3 + 3);
@@ -30,43 +37,45 @@ namespace {
   using enum InstructionData::Width;
   using enum RegisterOrImmediate::SourceMode;
   const auto INSTRUCTION_DATA = std::to_array<InstructionData>({
-    { ADD,  Word, 1, { RegisterOrImmediate{ Immediate, BASE_ADDRESS } }},       // r1 = BASE_ADDRESS
-    { ADD,  Word, 2, { RegisterOrImmediate{ Immediate, VALUE_COUNT - 1 } }},    // r2 = VALUE_COUNT - 1
+    { ADD,  Word, 1, { RegisterOrImmediate { Immediate, BASE_ADDRESS } }       }, // r1 = BASE_ADDRESS
+    { ADD,
+     Word,        2,
+     { RegisterOrImmediate { Immediate, VALUE_COUNT - 1 } }                    }, // r2 = VALUE_COUNT - 1
 
     // outer loop
-    { ADD,  Word, 3, {} },                                                      // r3 = 0
+    { ADD,  Word, 3, {}                                                        }, // r3 = 0
 
     // inner loop
-    { ADD,  Word, 4, { RegisterOrImmediate{ Register, 1 },  { Register, 3 }}},  // r4 = r1 + r3
-    { LD,   Word, 5, { RegisterOrImmediate{ Immediate, 0 }, { Register, 4 }}},  // r5 = Mem[r4]
-    { LD,   Word, 6, { RegisterOrImmediate{ Immediate, 4 }, { Register, 4 }}},  // r6 = Mem[r4+4]
-    { SUB,  Word, 0, { RegisterOrImmediate{ Register, 5 },  { Register, 6 }}},  // if r5 <= r6
-    { BLE,  Word, 0, { RegisterOrImmediate{ Immediate, LABEL_NO_SWAP }}},       //    goto no swap
-    { ST,   Word, 6, { RegisterOrImmediate{ Immediate, 0 }, { Register, 4 }}},  // Mem[r4] = r6
-    { ST,   Word, 5, { RegisterOrImmediate{ Immediate, 4 }, { Register, 4 }}},  // Mem[r4+4] = r5
+    { ADD,  Word, 4, { RegisterOrImmediate { Register, 1 }, { Register, 3 } }  }, // r4 = r1 + r3
+    { LD,   Word, 5, { RegisterOrImmediate { Immediate, 0 }, { Register, 4 } } }, // r5 = Mem[r4]
+    { LD,   Word, 6, { RegisterOrImmediate { Immediate, 4 }, { Register, 4 } } }, // r6 = Mem[r4+4]
+    { SUB,  Word, 0, { RegisterOrImmediate { Register, 5 }, { Register, 6 } }  }, // if r5 <= r6
+    { BLE,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_NO_SWAP } }      }, //    goto no swap
+    { ST,   Word, 6, { RegisterOrImmediate { Immediate, 0 }, { Register, 4 } } }, // Mem[r4] = r6
+    { ST,   Word, 5, { RegisterOrImmediate { Immediate, 4 }, { Register, 4 } } }, // Mem[r4+4] = r5
 
     // no swap
-    { ADD,  Word, 3, { RegisterOrImmediate{ Register, 3 },  { Immediate, 4 }}}, // r3 += 4
-    { ADD,  Word, 7, { RegisterOrImmediate{ Register, 2 }}},                    // r7 = r2
-    { SLL,  Word, 7, { RegisterOrImmediate{ Register, 7 },  { Immediate, 2 }}}, // r7 *= 4
-    { SUB,  Word, 0, { RegisterOrImmediate{ Register, 3 },  { Register, 7 }}},  // if r3 < r7
-    { BLT,  Word, 0, { RegisterOrImmediate{ Immediate, LABEL_INNER }}},         //    goto inner
-    { SUB,  Word, 2, { RegisterOrImmediate{ Register, 2 },  { Immediate, 1 }}}, // --r2
-    { SUB,  Word, 0, { RegisterOrImmediate{ Register, 2 }}},                    // if r2 > 0
-    { BGT,  Word, 0, { RegisterOrImmediate{ Immediate, LABEL_OUTER }}},         //    goto outer
+    { ADD,  Word, 3, { RegisterOrImmediate { Register, 3 }, { Immediate, 4 } } }, // r3 += 4
+    { ADD,  Word, 7, { RegisterOrImmediate { Register, 2 } }                   }, // r7 = r2
+    { SLL,  Word, 7, { RegisterOrImmediate { Register, 7 }, { Immediate, 2 } } }, // r7 *= 4
+    { SUB,  Word, 0, { RegisterOrImmediate { Register, 3 }, { Register, 7 } }  }, // if r3 < r7
+    { BLT,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_INNER } }        }, //    goto inner
+    { SUB,  Word, 2, { RegisterOrImmediate { Register, 2 }, { Immediate, 1 } } }, // --r2
+    { SUB,  Word, 0, { RegisterOrImmediate { Register, 2 } }                   }, // if r2 > 0
+    { BGT,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_OUTER } }        }, //    goto outer
 
-    { HALT, Word, 0, {}}
+    { HALT, Word, 0, {}                                                        }
   });
 
   auto createBinary() {
-    std::vector<std::byte> instruction_data{};
+    std::vector<std::byte> instruction_data {};
     for (const auto& instruction : INSTRUCTION_DATA) {
       instruction_data.append_range(instruction.encode());
     }
 
-    std::vector<std::byte> data{};
+    std::vector<std::byte> data {};
 
-    Memory::Header header{};
+    Memory::Header header {};
     header.entry_point = header.code_begin;
     header.data_begin = BASE_ADDRESS;
     header.ram_begin = BASE_ADDRESS + sizeof VALUES + Memory::PAGE_SIZE;
@@ -95,10 +104,10 @@ TEST_CASE("Encoding and decoding bubble sort", "[Instructions]") {
 }
 
 TEST_CASE("bubble sort", "[Instructions]") {
-  Processor processor{};
+  Processor processor {};
   processor.loadProgram(createBinary());
 
-  std::array<int32_t, VALUE_COUNT> values{};
+  std::array<int32_t, VALUE_COUNT> values {};
   for (size_t i = 0; i < VALUE_COUNT; ++i) {
     values[i] = processor.getState().memory.get<int32_t>(BASE_ADDRESS + i * sizeof(values[i]));
   }

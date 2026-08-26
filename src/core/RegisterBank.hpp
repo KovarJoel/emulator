@@ -7,7 +7,7 @@
 namespace core {
   class RegisterBank {
   public:
-    constexpr static size_t REGISTER_COUNT = 16;
+    static constexpr size_t REGISTER_COUNT = 16;
 
     auto begin(this auto&& self) {
       return self.m_registers.begin();
@@ -40,6 +40,6 @@ namespace core {
     bool operator==(const RegisterBank&) const = default;
 
   private:
-    std::array<Register, REGISTER_COUNT> m_registers{ Register::FixAtZero{} };
+    std::array<Register, REGISTER_COUNT> m_registers { Register::FixAtZero {} };
   };
 }

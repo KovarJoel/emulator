@@ -11,26 +11,26 @@ TEST_CASE("Truncation", "[Register]") {
   reg.set<uint32_t>(static_cast<uint32_t>(-1));
   CHECK(reg.get<uint8_t>() == 0xFF);
   CHECK(reg.get<uint16_t>() == 0xFFFF);
-  CHECK(reg.get<uint32_t>() == 0xFFFFFFFF);
+  CHECK(reg.get<uint32_t>() == 0xFFFF'FFFF);
   CHECK(reg.get<int8_t>() == -1);
   CHECK(reg.get<int16_t>() == -1);
   CHECK(reg.get<int32_t>() == -1);
 
-  reg.set<uint32_t>(0x01234567);
+  reg.set<uint32_t>(0x0123'4567);
   CHECK(reg.get<uint8_t>() == 0x67);
   CHECK(reg.get<uint16_t>() == 0x4567);
-  CHECK(reg.get<uint32_t>() == 0x01234567);
+  CHECK(reg.get<uint32_t>() == 0x0123'4567);
   CHECK(reg.get<int8_t>() == 0x67);
   CHECK(reg.get<int16_t>() == 0x4567);
-  CHECK(reg.get<int32_t>() == 0x01234567);
+  CHECK(reg.get<int32_t>() == 0x0123'4567);
 
-  reg.set<uint32_t>(0xDEADBEEF);
+  reg.set<uint32_t>(0xDEAD'BEEF);
   CHECK(reg.get<uint8_t>() == 0xEF);
   CHECK(reg.get<uint16_t>() == 0xBEEF);
-  CHECK(reg.get<uint32_t>() == 0xDEADBEEF);
+  CHECK(reg.get<uint32_t>() == 0xDEAD'BEEF);
   CHECK(reg.get<int8_t>() == 0xEF - (1 << 8));
   CHECK(reg.get<int16_t>() == 0xBEEF - (1 << 16));
-  CHECK(reg.get<int32_t>() == 0xDEADBEEFll - (1ll << 32));
+  CHECK(reg.get<int32_t>() == 0xDEAD'BEEFll - (1ll << 32));
 }
 
 TEST_CASE("Extension", "[Register]") {
@@ -42,15 +42,15 @@ TEST_CASE("Extension", "[Register]") {
   CHECK(reg.get<int32_t>() == -1);
   CHECK(reg.get<uint8_t>() == 0xFF);
   CHECK(reg.get<uint16_t>() == 0xFFFF);
-  CHECK(reg.get<uint32_t>() == 0xFFFFFFFF);
+  CHECK(reg.get<uint32_t>() == 0xFFFF'FFFF);
 
-  reg.set<int16_t>(-16657); // 0xBEEF
+  reg.set<int16_t>(-16'657);  // 0xBEEF
   CHECK(reg.get<int8_t>() == -17);
-  CHECK(reg.get<int16_t>() == -16657);
-  CHECK(reg.get<int32_t>() == -16657);
+  CHECK(reg.get<int16_t>() == -16'657);
+  CHECK(reg.get<int32_t>() == -16'657);
   CHECK(reg.get<uint8_t>() == 0xEF);
   CHECK(reg.get<uint16_t>() == 0xBEEF);
-  CHECK(reg.get<uint32_t>() == 0xFFFFBEEF);
+  CHECK(reg.get<uint32_t>() == 0xFFFF'BEEF);
 
   reg.set<uint8_t>(0xEF);
   CHECK(reg.get<int8_t>() == -17);
@@ -63,7 +63,7 @@ TEST_CASE("Extension", "[Register]") {
   reg.set<uint16_t>(0xBEEF);
   CHECK(reg.get<uint16_t>() == 0xBEEF);
   CHECK(reg.get<uint32_t>() == 0xBEEF);
-  CHECK(reg.get<int16_t>() == -16657);
+  CHECK(reg.get<int16_t>() == -16'657);
   CHECK(reg.get<int32_t>() == 0xBEEF);
 }
 
@@ -111,10 +111,10 @@ TEST_CASE("Equality", "[Register]") {
   CHECK(reg1 == reg2);
 
   reg1.set(-1);
-  reg2.set(0xFFFFFFFF);
+  reg2.set(0xFFFF'FFFF);
   CHECK(reg1 == reg2);
 
-  Register reg3{ Register::FixAtZero{} };
+  Register reg3 { Register::FixAtZero {} };
   CHECK(reg1 != reg3);
   reg3.set(-1);
   CHECK(reg1 != reg3);

@@ -4,30 +4,29 @@
 #include <fstream>
 #include <iterator>
 #include <memory>
-#include <vector>
 #include <new>
+#include <vector>
 
 namespace core {
   Memory::Memory()
-    : m_memory{ allocate() },
-      m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
-      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
-      m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
-  }
+    : m_memory { allocate() },
+      m_console { std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
+      m_header { std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
+      m_key_events { std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {}
 
   Memory::Memory(const Memory& other)
-    : m_memory{ allocate() },
-      m_console{ std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
-      m_header{ std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
-      m_key_events{ std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
+    : m_memory { allocate() },
+      m_console { std::start_lifetime_as<Console>(m_memory.get() + OFFSET_CONSOLE) },
+      m_header { std::start_lifetime_as<Header>(m_memory.get() + OFFSET_HEADER) },
+      m_key_events { std::start_lifetime_as<KeyEvents>(m_memory.get() + OFFSET_KEY_MAPPINGS) } {
     std::memcpy(m_memory.get(), other.m_memory.get(), RAM_SIZE);
   }
 
   Memory::Memory(Memory&& other) noexcept
-    : m_memory{ std::move(other.m_memory) },
-      m_console{ other.m_console },
-      m_header{ other.m_header },
-      m_key_events{ other.m_key_events } {
+    : m_memory { std::move(other.m_memory) },
+      m_console { other.m_console },
+      m_header { other.m_header },
+      m_key_events { other.m_key_events } {
     other.m_console = nullptr;
     other.m_header = nullptr;
     other.m_key_events = nullptr;
@@ -50,12 +49,18 @@ namespace core {
   }
 
   void Memory::loadProgram(std::span<const std::byte> binary) {
-    if (binary.size() <= sizeof(Header)) throw exceptions::InvalidBinary{};
-    if (binary.size() > RAM_SIZE - OFFSET_HEADER) throw exceptions::InvalidBinary{};
+    if (binary.size() <= sizeof(Header)) {
+      throw exceptions::InvalidBinary {};
+    }
+    if (binary.size() > RAM_SIZE - OFFSET_HEADER) {
+      throw exceptions::InvalidBinary {};
+    }
 
-    Header new_header{};
+    Header new_header {};
     std::memcpy(&new_header, binary.data(), sizeof(Header));
-    if (!validHeader(new_header)) throw exceptions::InvalidBinary{};
+    if (!validHeader(new_header)) {
+      throw exceptions::InvalidBinary {};
+    }
 
     std::memcpy(m_memory.get() + OFFSET_HEADER, binary.data(), binary.size_bytes());
   }
@@ -63,8 +68,8 @@ namespace core {
   void Memory::loadProgram(const std::filesystem::path& file_path) {
     std::ifstream file(file_path, std::ios_base::binary);
 
-    const std::vector<char> binary{ std::istreambuf_iterator<char>{ file },
-      std::istreambuf_iterator<char>{} };
+    const std::vector<char> binary { std::istreambuf_iterator<char> { file },
+                                     std::istreambuf_iterator<char> {} };
 
     loadProgram({ reinterpret_cast<const std::byte*>(binary.data()), binary.size() });
   }
@@ -83,23 +88,40 @@ namespace core {
   }
 
   std::byte* Memory::allocate() {
-    auto ptr = static_cast<std::byte*>(::operator new[] (RAM_SIZE, MAX_ALIGNMENT));
+    auto ptr = static_cast<std::byte*>(::operator new[](RAM_SIZE, MAX_ALIGNMENT));
     std::memset(ptr, 0x00, RAM_SIZE);
     return ptr;
   }
 
   bool Memory::validHeader(const Header& header) {
-    if (header.tag != Header{}.tag) return false;
-    if (header.code_begin != Header{}.code_begin) return false;
-    if (header.version > CURRENT_VERSION) return false;
-    if (header.data_begin < header.code_begin + PAGE_SIZE) return false;
-    if (header.ram_begin < header.data_begin + PAGE_SIZE) return false;
-    if (header.entry_point < header.code_begin ||
-        header.entry_point >= header.data_begin) return false;
+    if (header.tag != Header {}.tag) {
+      return false;
+    }
+    if (header.code_begin != Header {}.code_begin) {
+      return false;
+    }
+    if (header.version > CURRENT_VERSION) {
+      return false;
+    }
+    if (header.data_begin < header.code_begin + PAGE_SIZE) {
+      return false;
+    }
+    if (header.ram_begin < header.data_begin + PAGE_SIZE) {
+      return false;
+    }
+    if (header.entry_point < header.code_begin || header.entry_point >= header.data_begin) {
+      return false;
+    }
 
-    if (header.code_begin % PAGE_SIZE != 0) return false;
-    if (header.data_begin % PAGE_SIZE != 0) return false;
-    if (header.ram_begin % PAGE_SIZE != 0) return false;
+    if (header.code_begin % PAGE_SIZE != 0) {
+      return false;
+    }
+    if (header.data_begin % PAGE_SIZE != 0) {
+      return false;
+    }
+    if (header.ram_begin % PAGE_SIZE != 0) {
+      return false;
+    }
 
     return true;
   }

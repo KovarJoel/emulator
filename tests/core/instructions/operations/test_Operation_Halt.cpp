@@ -14,12 +14,7 @@ using namespace core::instructions::operations;
 
 namespace {
   Instruction generateHalt() {
-    const InstructionData data{
-      Opcode::HALT,
-      InstructionData::Width::Word,
-      0,
-      {}
-    };
+    const InstructionData data { Opcode::HALT, InstructionData::Width::Word, 0, {} };
 
     Instruction inst;
     inst.setData(data);
@@ -27,12 +22,7 @@ namespace {
   }
 
   Instruction generateNop() {
-    const InstructionData data{
-      Opcode::ADD,
-      InstructionData::Width::Word,
-      0,
-      {}
-    };
+    const InstructionData data { Opcode::ADD, InstructionData::Width::Word, 0, {} };
 
     Instruction inst;
     inst.setData(data);
@@ -48,7 +38,7 @@ TEST_CASE("Halt halts the execution", "[Instructions::Operations::Halt]") {
   try {
     inst.execute(state);
     CHECK(!"should be unreachable");
-  } catch(...) {}
+  } catch (...) {}
 
   CHECK_THROWS_AS(inst.execute(state), exceptions::Halt);
 }
@@ -74,10 +64,11 @@ TEST_CASE("State is unchanged", "[Instructions::Operations::Halt]") {
     constexpr size_t PC_INDEX = 15;
     if (i == PC_INDEX) {
       CHECK(oldState.registers[i] != state.registers[i]);
-      CHECK(oldState.registers[i].get<uint32_t>() + inst.getData().getEncodingSize()
-        == state.registers[i].get<uint32_t>());
-    }
-    else {
+      CHECK(
+        oldState.registers[i].get<uint32_t>() + inst.getData().getEncodingSize()
+        == state.registers[i].get<uint32_t>()
+      );
+    } else {
       CHECK(oldState.registers[i] == state.registers[i]);
     }
   }
@@ -91,13 +82,17 @@ TEST_CASE("PC and CYCL updated", "[Instructions::Operations::Halt]") {
   ProcessorState state;
   ProcessorState oldState = state;
   nop.execute(state);
-  CHECK(oldState.registers.getPC().get<uint32_t>() + nop.getData().getEncodingSize()
-    == state.registers.getPC().get<uint32_t>());
+  CHECK(
+    oldState.registers.getPC().get<uint32_t>() + nop.getData().getEncodingSize()
+    == state.registers.getPC().get<uint32_t>()
+  );
   CHECK(oldState.cycle_count + 1 == state.cycle_count);
 
   oldState = state;
   CHECK_THROWS(halt.execute(state));
-  CHECK(oldState.registers.getPC().get<uint32_t>() + halt.getData().getEncodingSize()
-    == state.registers.getPC().get<uint32_t>());
+  CHECK(
+    oldState.registers.getPC().get<uint32_t>() + halt.getData().getEncodingSize()
+    == state.registers.getPC().get<uint32_t>()
+  );
   CHECK(oldState.cycle_count + 1 == state.cycle_count);
 }

@@ -15,8 +15,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Zero)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -27,8 +26,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -42,8 +40,7 @@ namespace core::instructions::operations {
 
       if (!flags.getBit(Zero) && flags.getBit(Sign) == flags.getBit(Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -57,8 +54,7 @@ namespace core::instructions::operations {
 
       if (!flags.getBit(Zero) && flags.getBit(Sign) != flags.getBit(Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -72,8 +68,7 @@ namespace core::instructions::operations {
 
       if (flags.getBit(Zero) || flags.getBit(Sign) == flags.getBit(Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -87,8 +82,7 @@ namespace core::instructions::operations {
 
       if (flags.getBit(Zero) || flags.getBit(Sign) != flags.getBit(Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -102,8 +96,7 @@ namespace core::instructions::operations {
 
       if (!flags.getBit(Zero) && !flags.getBit(Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -117,8 +110,7 @@ namespace core::instructions::operations {
 
       if (flags.getBit(Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -132,8 +124,7 @@ namespace core::instructions::operations {
 
       if (!flags.getBit(Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -147,8 +138,7 @@ namespace core::instructions::operations {
 
       if (flags.getBit(Zero) || flags.getBit(Sign) != flags.getBit(Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -159,8 +149,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -171,8 +160,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Carry)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -183,8 +171,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }
@@ -195,8 +182,7 @@ namespace core::instructions::operations {
     void execute(const InstructionData& data, ProcessorState& state) const {
       if (!state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow)) {
         state.registers.getPC().set(data.getSources()[0].getValue(state.registers));
-      }
-      else {
+      } else {
         advancePC(data, state);
       }
     }

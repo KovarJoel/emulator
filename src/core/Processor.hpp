@@ -14,7 +14,10 @@ namespace core {
     void loadProgram(std::span<const std::byte> binary);
     void loadProgram(const std::filesystem::path& file_path);
 
-    void run(std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)> callback = [](auto&, auto&){});
+    void run(
+      std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)>
+        callback = [](auto&, auto&) {}
+    );
 
     auto& getState(this auto&& self) {
       return self.m_state;
@@ -24,8 +27,8 @@ namespace core {
     void initializeRegisters();
 
     instructions::InstructionData fetchAndDecode() const;
-  
-    private:
+
+  private:
     ProcessorState m_state;
   };
 }

@@ -3,15 +3,15 @@
 #include "AssemblerData.hpp"
 
 #include <cstddef>
-#include <string>
 #include <ostream>
+#include <string>
 
 namespace assembler {
   enum class ErrorType {
     Assembler_InvalidArgumentCount,
     Assembler_InvalidFilePath,
     Assembler_ReadError,
-    
+
     Lexer_UnexpectedSymbol,
     Lexer_NonPairedStringQuote,
     Lexer_MissingDigitsAfterBase,
@@ -31,22 +31,22 @@ namespace assembler {
     Parser_ExpectedBranchLabel,
     Parser_ExpectedBranchTarget,
     Parser_ExpectedJumpTarget,
-    
+
     Parser_ExpectedVariableName,
     Parser_ExpectedEquals,
     Parser_ExpectedWidthSpecifier,
     Parser_InvalidWidthSpecifier,
     Parser_ExpectedInitializerValue,
     Parser_ExpectedEndOfInitializer,
-    
+
     Parser_ExpectedMnemonic,
     Parser_UnknownMnemonic,
-    
+
     Parser_ExpectedImmediate,
     Parser_NumericValueOutOfRange,
     Parser_ExpectedNumber,
     Parser_ExpectedNumberAfterMinus,
-    
+
     Parser_MissingOperands,
     Parser_ExpectedOperand,
     Parser_ExpectedRegisterOperand,
@@ -54,7 +54,7 @@ namespace assembler {
     Parser_ExpectedAddressingMode,
     Parser_ExpectedOperandSeparator,
     Parser_ExpectedString,
-    
+
     IRGenerator_MissingMain,
     IRGenerator_UndefinedBranch,
     IRGenerator_ShaddowingBranch,
@@ -67,17 +67,17 @@ namespace assembler {
   };
 
   struct Error {
-    ErrorType type{};
+    ErrorType type {};
 
-    std::string file_path{};
-    
-    std::string line_content{};
-    size_t line{};
-    size_t column{};
+    std::string file_path {};
 
-    int argc{};
-    int expected_argc{};
-    std::string usage{};
+    std::string line_content {};
+    size_t line {};
+    size_t column {};
+
+    int argc {};
+    int expected_argc {};
+    std::string usage {};
   };
 
   std::ostream& operator<<(std::ostream& out, const Error& error);

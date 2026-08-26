@@ -2,8 +2,8 @@
 
 #include "AssemblerData.hpp"
 
-#include <span>
 #include <cstddef>
+#include <span>
 
 namespace assembler {
   class Assembler {
@@ -17,6 +17,6 @@ namespace assembler {
     void writeFile(std::span<const std::byte> bytes);
 
   private:
-    AssemblerData m_data{};
+    AssemblerData m_data {};
   };
 }

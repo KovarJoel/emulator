@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Console.hpp"
-#include "KeyEvents.hpp"
 #include "Exceptions.hpp"
+#include "KeyEvents.hpp"
 #include "Types.hpp"
 
 #include <algorithm>
@@ -12,35 +12,33 @@
 #include <cstring>
 #include <filesystem>
 #include <memory>
-#include <span>
 #include <mutex>
+#include <span>
 
 namespace core {
   class Memory {
   public:
-    constexpr static uint32_t PAGE_SIZE{ 0x1000 };
-    constexpr static uint32_t RAM_SIZE{ 1 << 24 };
-    constexpr static uint32_t OFFSET_CONSOLE{ PAGE_SIZE };
-    constexpr static uint32_t OFFSET_KEY_MAPPINGS{ 0x7000 };
-    constexpr static uint32_t OFFSET_HEADER{ 0x10000 };
-    constexpr static uint32_t OFFSET_CODE{ OFFSET_HEADER + PAGE_SIZE };
-    
-    constexpr static uint32_t CURRENT_VERSION{ 0 };
+    static constexpr uint32_t PAGE_SIZE { 0x1000 };
+    static constexpr uint32_t RAM_SIZE { 1 << 24 };
+    static constexpr uint32_t OFFSET_CONSOLE { PAGE_SIZE };
+    static constexpr uint32_t OFFSET_KEY_MAPPINGS { 0x7000 };
+    static constexpr uint32_t OFFSET_HEADER { 0x1'0000 };
+    static constexpr uint32_t OFFSET_CODE { OFFSET_HEADER + PAGE_SIZE };
+
+    static constexpr uint32_t CURRENT_VERSION { 0 };
 
     struct Header {
-      std::array<unsigned char, 8> tag{ 'e', 'm', 'u', 'l', 'a', 't', 'o', 'r' };
-      uint32_t version{};
-      uint32_t code_begin{ OFFSET_CODE };
-      uint32_t data_begin{};
-      uint32_t ram_begin{};
-      uint32_t entry_point{};
+      std::array<unsigned char, 8> tag { 'e', 'm', 'u', 'l', 'a', 't', 'o', 'r' };
+      uint32_t version {};
+      uint32_t code_begin { OFFSET_CODE };
+      uint32_t data_begin {};
+      uint32_t ram_begin {};
+      uint32_t entry_point {};
     };
 
-    constexpr static std::align_val_t MAX_ALIGNMENT{ std::max({
-      alignof(Console),
-      alignof(Header),
-      alignof(KeyEvents)
-    })};
+    static constexpr std::align_val_t MAX_ALIGNMENT {
+      std::max({ alignof(Console), alignof(Header), alignof(KeyEvents) })
+    };
 
   public:
     Memory();
@@ -68,19 +66,28 @@ namespace core {
 
     template <EmulatorType T>
     T get(size_t address) const {
-      if (address < PAGE_SIZE) throw exceptions::InvalidReadAccess{};
-      if (address + sizeof(T) > RAM_SIZE) throw exceptions::InvalidReadAccess{};
+      if (address < PAGE_SIZE) {
+        throw exceptions::InvalidReadAccess {};
+      }
+      if (address + sizeof(T) > RAM_SIZE) {
+        throw exceptions::InvalidReadAccess {};
+      }
 
-      T value{};
+      T value {};
       std::memcpy(&value, m_memory.get() + address, sizeof(T));
       return value;
     }
 
     void set(size_t address, EmulatorType auto value) {
-      if (address < PAGE_SIZE) throw exceptions::InvalidWriteAccess{};
-      if (address + sizeof(value) > RAM_SIZE) throw exceptions::InvalidWriteAccess{};
-      if (address + sizeof(value) > OFFSET_HEADER && address < getHeader().data_begin)
-        throw exceptions::InvalidWriteAccess{};
+      if (address < PAGE_SIZE) {
+        throw exceptions::InvalidWriteAccess {};
+      }
+      if (address + sizeof(value) > RAM_SIZE) {
+        throw exceptions::InvalidWriteAccess {};
+      }
+      if (address + sizeof(value) > OFFSET_HEADER && address < getHeader().data_begin) {
+        throw exceptions::InvalidWriteAccess {};
+      }
 
       std::memcpy(m_memory.get() + address, &value, sizeof(value));
     }
@@ -102,7 +109,7 @@ namespace core {
   private:
     struct Deleter {
       void operator()(std::byte* ptr) const noexcept {
-        ::operator delete[] (ptr, MAX_ALIGNMENT);
+        ::operator delete[](ptr, MAX_ALIGNMENT);
       }
     };
 
@@ -112,6 +119,6 @@ namespace core {
     Header* m_header;
     KeyEvents* m_key_events;
 
-    mutable std::mutex m_mutex{};
+    mutable std::mutex m_mutex {};
   };
 }

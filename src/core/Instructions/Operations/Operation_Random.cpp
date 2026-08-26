@@ -6,7 +6,7 @@ namespace core::instructions::operations {
       data.getSources()[0].getValue(state.registers),
       data.getSources()[1].getValue(state.registers)
     );
-    
+
     const uint32_t result = distribution(m_generator);
     state.registers[data.getDestRegisterAddr()].set<uint32_t>(result);
 

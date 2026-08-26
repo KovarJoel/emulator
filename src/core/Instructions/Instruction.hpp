@@ -22,6 +22,7 @@
 
 namespace core::instructions {
   namespace internal {
+    // clang-format off
     using InstructionVariant = std::variant<
       #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CLASS(mnemonic, type, class, ...) operations::class,
         EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CLASS)
@@ -37,6 +38,7 @@ namespace core::instructions {
       }
       throw exceptions::InvalidOperation{};
     }
+    // clang-format on
   }
 
   class Instruction {
@@ -49,7 +51,7 @@ namespace core::instructions {
     void execute(ProcessorState& state) const;
 
   private:
-    InstructionData m_data{};
-    internal::InstructionVariant m_instruction{};
+    InstructionData m_data {};
+    internal::InstructionVariant m_instruction {};
   };
 }

@@ -16,24 +16,24 @@ namespace assembler {
       Comma,
       Dot,
       Dollar,
-      
+
       Minus,
       Equal,
-      
+
       LeftParen,
       RightParen,
       LeftSquare,
       RightSquare,
-      
+
       NewLine,
       EndOfFile,
-      
+
       String,
       Number,
-      
+
       Identifier,
     };
-    
+
     struct Token {
       TokenType type;
       std::string value;
@@ -45,12 +45,12 @@ namespace assembler {
 
   public:
     Lexer(const AssemblerData& data);
-    
+
     const std::vector<Token>& run();
 
   private:
     Error createError(ErrorType type, size_t line_index = -1, size_t column_index = -1) const;
-    
+
     void runOnLine(size_t line_index);
 
     size_t runOnString(size_t line_index, size_t column_index);
@@ -60,6 +60,6 @@ namespace assembler {
   private:
     const AssemblerData& m_assembler_data;
 
-    std::vector<Token> m_tokens{};
+    std::vector<Token> m_tokens {};
   };
 }

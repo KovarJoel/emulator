@@ -7,7 +7,12 @@ namespace assembler {
     std::print(out, "[ERROR] ");
     switch (error.type) {
     case ErrorType::Assembler_InvalidArgumentCount:
-      std::println(out, "Assembler: Invalid argument count, expected {}, got {}", error.expected_argc, error.argc);
+      std::println(
+        out,
+        "Assembler: Invalid argument count, expected {}, got {}",
+        error.expected_argc,
+        error.argc
+      );
       std::println("  > Usage: {}", error.usage);
       return out;
     case ErrorType::Assembler_InvalidFilePath:
@@ -74,7 +79,10 @@ namespace assembler {
       std::println(out, "Parser: Expected width specifier after dot in variable assignment");
       break;
     case ErrorType::Parser_InvalidWidthSpecifier:
-      std::println(out, "Parser: Invalid width specifier. Supported are B (byte), H (half word), W (word, default)");
+      std::println(
+        out,
+        "Parser: Invalid width specifier. Supported are B (byte), H (half word), W (word, default)"
+      );
       break;
     case ErrorType::Parser_ExpectedInitializerValue:
       std::println(out, "Parser: Expected initializer value");
@@ -131,7 +139,10 @@ namespace assembler {
       std::println(out, "IRGenerator: Branch shaddows function label");
       break;
     case ErrorType::IRGenerator_VoidBranch:
-      std::println(out, "IRGenerator: Branch is pointing to nothing, missing instruction afterwards");
+      std::println(
+        out,
+        "IRGenerator: Branch is pointing to nothing, missing instruction afterwards"
+      );
       break;
     case ErrorType::IRGenerator_DuplicateBranch:
       std::println(out, "IRGenerator: Branch with same label already exists elsewhere in function");
@@ -146,15 +157,19 @@ namespace assembler {
       std::println(out, "IRGenerator: Undefined variable name");
       break;
     }
-    
+
     std::println(out, "  > In file {}:{}:{}", error.file_path, error.line, error.column);
-    
-    if (error.line == 0) return out;
+
+    if (error.line == 0) {
+      return out;
+    }
 
     std::println(out, "{:5} | {}", error.line, error.line_content);
 
-    if (error.column == 0) return out;
-    
+    if (error.column == 0) {
+      return out;
+    }
+
     std::print(out, "{:5} | ", ' ');
     for (size_t i = 1; i < error.column; ++i) {
       std::print(out, "-");

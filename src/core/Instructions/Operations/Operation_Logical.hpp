@@ -12,7 +12,7 @@ namespace core::instructions::operations {
   public:
     void execute(const InstructionData& data, ProcessorState& state) const;
   };
-  
+
   class Xor : public bases::Base {
   public:
     void execute(const InstructionData& data, ProcessorState& state) const;
