@@ -5,6 +5,7 @@
 #include "core/Instructions/RegisterOrImmediate.hpp"
 #include "core/RegisterBank.hpp"
 
+#include <climits>
 #include <cstdint>
 
 namespace core::instructions {
@@ -112,6 +113,15 @@ namespace core::instructions {
       immediate <<= 8;
       immediate |= static_cast<uint8_t>(data[ENCODING_SIZE_IMMEDIATE - 1 - i]);
     }
+
+    constexpr uint32_t MSB_MASK = 1 << (ENCODING_SIZE_IMMEDIATE * CHAR_BIT - 1);
+    if (immediate & MSB_MASK) {
+      constexpr uint32_t SIGN_EXTENDED_MASK = 0xFF00'0000;
+      static_assert(ENCODING_SIZE_IMMEDIATE == 3);
+
+      immediate |= SIGN_EXTENDED_MASK;
+    }
+
     return immediate;
   }
 

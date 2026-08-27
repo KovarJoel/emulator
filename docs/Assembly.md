@@ -14,6 +14,8 @@ but part of the string.
 Immediates are assumed to be in decimal representation.
 For hexadecimal prefix with `0x...`, for octal prefix with `0o...`,
 for binary prefix with `0b...`.
+They are stored using 24 bits and always sign extended, except for jumps (`JMP`) and branches (`Bxx`)
+where they are zero extended.
 For negative immediates use a preceding minus sign (`-`).
 
 ## Segments
