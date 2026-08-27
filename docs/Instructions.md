@@ -18,7 +18,7 @@ for the operand refering to the memory location:
 
 Instructions referring to memory operations may be suffixed with a width specifier.
 `B` for byte, `H` for half word, `W` for word (implicit default),
-e.g. `LDSX.H` for reading a signed half word (16 bits with sign extension).
+e.g. `LD.H` for reading a signed half word (16 bits with sign extension).
 
 ### Load
 ```
