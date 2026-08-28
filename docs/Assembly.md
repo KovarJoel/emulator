@@ -18,6 +18,11 @@ They are stored using 24 bits and always sign extended, except for jumps (`JMP`)
 where they are zero extended.
 For negative immediates use a preceding minus sign (`-`).
 
+Alternatively strings with a length of one can be used to have the immediates value
+be set to the characters ascii value. The character will be placed in the least
+significant byte and the upper bytes are set to zero. Strings are denoted with
+double quotes at the front and back, e.g. `"A"`.
+
 ## Segments
 There is a code and a data segment which may be interleaved in the assembly code.
 A segment is denoted with the `segment` keyword followed by a colon and either
@@ -48,23 +53,24 @@ variable_name = <initializer-list>
 ```
 The `variable_name` stores the address of the first byte of the data.
 
-The initializer list has to be non-empty and can have elements of those types:
+The initializer list has to be non-empty and consits of a comma separated list
+of immediates, with the difference that strings can contain multiple characters.
+If a string with multiple characters is used, each character is interpreted as its
+own immediate value. Note that strings are not null terminated.
 
-- A string literal denoted by double quotes, e.g. `"foo"`. The string is not null terminated.
+The variable definition can include an optional width specifier, similar to the load and store
+instructions. The width applies to all values in the initializer list.
+All elements are stored in a whole word per default.
 
-- An immediate.
-
-A variable can refer to a sequence of words with a comma separated list,
-e.g. `str.B = "foo", 0x0A, "bar", 0x00` to include a new line character between
+Examle: `str.B = "foo", 0x0A, "bar", 0x00` to include a new line character between
 `"foo"` and `"bar"` and end the string with a null terminator.
 
-Note that all elements of an initializer are stored in a whole word per default
-which also applies to strings. To use the less significant bytes use a width specifier.
-The width specifier applies to all elements of the initializer list.
+Note that the default width also applies to strings. To use the less significant bytes use a width specifier.
 This means that `str = "foo", 0x00` will not store the bytes `0x66, 0x6f, 0x6f, 0x00` but rather
 `0x66, 0x00, 0x00, 0x00, 0x6f, 0x00, ...`.
 
-To use the variable somewhere in the code segment precede its name with a dollar sign (`$`).
+To use the variable somewhere in the code segment precede its name with a dollar sign (`$`)
+to get the address of its first byte as an immediate value.
 
 Example:
 ```

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "AssemblerData.hpp"
-
 #include <cstddef>
 #include <ostream>
 #include <string>
@@ -46,6 +44,7 @@ namespace assembler {
     Parser_NumericValueOutOfRange,
     Parser_ExpectedNumber,
     Parser_ExpectedNumberAfterMinus,
+    Parser_ExpectedSizeOneCharImmediate,
 
     Parser_MissingOperands,
     Parser_ExpectedOperand,
@@ -54,6 +53,7 @@ namespace assembler {
     Parser_ExpectedAddressingMode,
     Parser_ExpectedOperandSeparator,
     Parser_ExpectedString,
+    Parser_EmptyString,
 
     IRGenerator_MissingMain,
     IRGenerator_UndefinedBranch,

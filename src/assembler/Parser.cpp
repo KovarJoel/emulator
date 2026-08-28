@@ -92,15 +92,15 @@ namespace assembler {
 
   void Parser::parseString() {
     assert(!m_remaining_lexer_tokens.empty());
-    if (m_remaining_lexer_tokens[0].type != Lexer::TokenType::String) {
-      throw createError(
-        ErrorType::Parser_ExpectedString,
-        m_remaining_lexer_tokens[0].line,
-        m_remaining_lexer_tokens[0].column
-      );
-    }
 
     const auto& lexer_token = m_remaining_lexer_tokens[0];
+    if (lexer_token.type != Lexer::TokenType::String) {
+      throw createError(ErrorType::Parser_ExpectedString, lexer_token.line, lexer_token.column);
+    }
+
+    if (lexer_token.value.empty()) {
+      throw createError(ErrorType::Parser_EmptyString, lexer_token.line, lexer_token.column);
+    }
 
     for (size_t i = 0; i < lexer_token.value.size(); ++i) {
       const uint32_t value = static_cast<unsigned char>(lexer_token.value[i]);
@@ -243,6 +243,15 @@ namespace assembler {
         m_remaining_lexer_tokens[1].column
       );
       m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(2);
+    } else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::String) {
+      if (m_remaining_lexer_tokens[0].value.size() != 1) {
+        throw createError(
+          ErrorType::Parser_ExpectedSizeOneCharImmediate,
+          m_remaining_lexer_tokens[0].line,
+          m_remaining_lexer_tokens[0].column
+        );
+      }
+      parseString();
     } else {
       throw createError(
         ErrorType::Parser_ExpectedImmediate,
@@ -504,6 +513,7 @@ namespace assembler {
         m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus
         || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number
         || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar
+        || m_remaining_lexer_tokens[0].type == Lexer::TokenType::String
       )
       {
         parseImmediate();

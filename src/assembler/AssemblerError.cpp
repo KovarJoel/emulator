@@ -108,6 +108,9 @@ namespace assembler {
     case ErrorType::Parser_ExpectedNumberAfterMinus:
       std::println(out, "Parser: Expected a number after a minus sign");
       break;
+    case ErrorType::Parser_ExpectedSizeOneCharImmediate:
+      std::println(out, "Parser: Expected a string of size 1 for a character immediate");
+      break;
     case ErrorType::Parser_MissingOperands:
       std::println(out, "Parser: Missing operands for given instruction");
       break;
@@ -128,6 +131,9 @@ namespace assembler {
       break;
     case ErrorType::Parser_ExpectedString:
       std::println(out, "Parser: Expected string");
+      break;
+    case ErrorType::Parser_EmptyString:
+      std::println(out, "Parser: String must not be empty");
       break;
     case ErrorType::IRGenerator_MissingMain:
       std::println(out, "IRGenerator: Missing main function, there is no entry point");
