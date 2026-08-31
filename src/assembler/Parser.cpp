@@ -48,7 +48,10 @@ namespace assembler {
       std::println(out, "Register:           R{}", std::get<Parser::Register>(tk).address);
     } else if (std::holds_alternative<Parser::Immediate>(tk)) {
       const auto& value = std::get<Parser::Immediate>(tk).value;
-      std::println(out, "Immediate:          {} (0x{:x})", value, value);
+      std::visit(
+        [&out](auto&& v) { std::println(out, "Immediate:          {} (0x{:x})", v, v); },
+        value
+      );
     } else if (std::holds_alternative<Parser::NewLine>(tk)) {
       std::println(out, "NewLine");
     } else if (std::holds_alternative<Parser::EndOfFile>(tk)) {
@@ -113,12 +116,12 @@ namespace assembler {
   void Parser::parseNumber() {
     assert(!m_remaining_lexer_tokens.empty());
 
-    bool is_signed = false;
+    bool is_negative = false;
 
     if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number) {
-      is_signed = false;
+      is_negative = false;
     } else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus) {
-      is_signed = true;
+      is_negative = true;
     } else {
       throw createError(
         ErrorType::Parser_ExpectedNumber,
@@ -127,7 +130,7 @@ namespace assembler {
       );
     }
 
-    if (is_signed) {
+    if (is_negative) {
       assert(m_remaining_lexer_tokens.size() >= 2);
       if (m_remaining_lexer_tokens[1].type != Lexer::TokenType::Number) {
         throw createError(
@@ -138,13 +141,13 @@ namespace assembler {
       }
     }
 
-    const auto& number_token = m_remaining_lexer_tokens[is_signed ? 1 : 0];
+    const auto& number_token = m_remaining_lexer_tokens[is_negative ? 1 : 0];
     assert(!number_token.value.empty());
 
     char base_letter = 'd';
     std::string string_value {};
 
-    if (is_signed) {
+    if (is_negative) {
       string_value = "-";
     }
 
@@ -178,23 +181,34 @@ namespace assembler {
       assert(!"[Parser] Invalid number base");
     }
 
-    std::from_chars_result conversion_result {};
-    uint32_t result {};
+    const bool is_unsigned =
+      m_remaining_lexer_tokens[is_negative ? 2 : 1].type == Lexer::TokenType::Identifier
+      && lower(m_remaining_lexer_tokens[is_negative ? 2 : 1].value) == "u";
 
-    if (is_signed) {
-      int32_t value {};
+    if (is_negative && is_unsigned) {
+      throw createError(
+        ErrorType::Parser_NegativeUnsigned,
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    }
+
+    std::from_chars_result conversion_result {};
+    uint32_t result_unsigned {};
+    int32_t result_signed {};
+
+    if (is_unsigned) {
       conversion_result = std::from_chars(
         string_value.data(),
         string_value.data() + string_value.size(),
-        value,
+        result_unsigned,
         base
       );
-      result = static_cast<uint32_t>(value);
     } else {
       conversion_result = std::from_chars(
         string_value.data(),
         string_value.data() + string_value.size(),
-        result,
+        result_signed,
         base
       );
     }
@@ -212,12 +226,21 @@ namespace assembler {
       && conversion_result.ptr == string_value.data() + string_value.size()
     );
 
-    m_tokens.emplace_back(
-      Immediate { result },
-      m_remaining_lexer_tokens[0].line,
-      m_remaining_lexer_tokens[0].column
-    );
-    m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(is_signed ? 2 : 1);
+    if (is_unsigned) {
+      m_tokens.emplace_back(
+        Immediate { result_unsigned },
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    } else {
+      m_tokens.emplace_back(
+        Immediate { result_signed },
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    }
+    m_remaining_lexer_tokens =
+      m_remaining_lexer_tokens.subspan((is_negative || is_unsigned) ? 2 : 1);
   }
 
   void Parser::parseImmediate() {
@@ -356,7 +379,7 @@ namespace assembler {
 
     bool uses_displacement = false;
 
-    const Parser::Token zero_displacement { Immediate { 0 },
+    const Parser::Token zero_displacement { Immediate { 0u },
                                             m_remaining_lexer_tokens[0].line,
                                             m_remaining_lexer_tokens[0].column };
 

@@ -108,6 +108,9 @@ namespace assembler {
     case ErrorType::Parser_ExpectedNumberAfterMinus:
       std::println(out, "Parser: Expected a number after a minus sign");
       break;
+    case ErrorType::Parser_NegativeUnsigned:
+      std::println(out, "Parser: Unsigned value can't be negative");
+      break;
     case ErrorType::Parser_ExpectedSizeOneCharImmediate:
       std::println(out, "Parser: Expected a string of size 1 for a character immediate");
       break;
@@ -161,6 +164,9 @@ namespace assembler {
       break;
     case ErrorType::IRGenerator_UndefinedVariable:
       std::println(out, "IRGenerator: Undefined variable name");
+      break;
+    case ErrorType::IRGenerator_InsufficientWidthForImmediate:
+      std::println(out, "IRGenerator: Immediate value requires more bits than there are specified");
       break;
     }
 

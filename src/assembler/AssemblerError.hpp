@@ -44,6 +44,7 @@ namespace assembler {
     Parser_NumericValueOutOfRange,
     Parser_ExpectedNumber,
     Parser_ExpectedNumberAfterMinus,
+    Parser_NegativeUnsigned,
     Parser_ExpectedSizeOneCharImmediate,
 
     Parser_MissingOperands,
@@ -64,6 +65,7 @@ namespace assembler {
     IRGenerator_EmptyFunction,
 
     IRGenerator_UndefinedVariable,
+    IRGenerator_InsufficientWidthForImmediate
   };
 
   struct Error {

@@ -122,7 +122,10 @@ namespace assembler {
       if (std::holds_alternative<Parser::Register>(source_operands[i])) {
         sources[i].setRegisterAddress(std::get<Parser::Register>(source_operands[i]).address);
       } else if (std::holds_alternative<Parser::Immediate>(source_operands[i])) {
-        sources[i].setImmediateValue(std::get<Parser::Immediate>(source_operands[i]).value);
+        std::visit(
+          [&sources, i](auto&& imm) { sources[i].setImmediateValue(static_cast<uint32_t>(imm)); },
+          std::get<Parser::Immediate>(source_operands[i]).value
+        );
       } else if (std::holds_alternative<Parser::BranchTarget>(source_operands[i])) {
         const std::string& branch_name = std::get<Parser::BranchTarget>(source_operands[i]).label;
 
@@ -238,9 +241,14 @@ namespace assembler {
         break;
       }
 
-      for (const auto& value : var.initializer) {
+      for (const auto& imm : var.initializer) {
         data.resize(data.size() + element_size);
-        std::memcpy(data.data() + (data.size() - element_size), &value, element_size);
+        std::visit(
+          [&](auto&& val) {
+            std::memcpy(data.data() + (data.size() - element_size), &val, element_size);
+          },
+          imm.value
+        );
       }
 
       address += element_size * static_cast<uint32_t>(var.initializer.size());

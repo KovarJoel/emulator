@@ -1,8 +1,10 @@
 #include "IRGenerator.hpp"
 #include "assembler/AssemblerError.hpp"
+#include "core/Instructions/InstructionData.hpp"
 
 #include <algorithm>
 #include <cassert>
+#include <type_traits>
 #include <variant>
 
 namespace assembler {
@@ -163,7 +165,7 @@ namespace assembler {
       }
 
       while (std::holds_alternative<Parser::Immediate>(m_parser_tokens[i].token)) {
-        variable.initializer.push_back(std::get<Parser::Immediate>(m_parser_tokens[i].token).value);
+        variable.initializer.push_back(std::get<Parser::Immediate>(m_parser_tokens[i].token));
         ++i;
       }
 
@@ -229,6 +231,51 @@ namespace assembler {
               m_assembler_data.input_file_path,
             };
           }
+        }
+      }
+    }
+
+    for (const auto& var : m_data.variables) {
+      for (const auto& immediate : var.initializer) {
+        std::visit(
+          [&var](auto val) {
+            if constexpr (std::is_signed_v<decltype(val)>) {
+              const auto [min, max] = getMinMax<int32_t>(widthToBits(var.width));
+              validateImmediate(min, max, val);
+            } else {
+              const auto [min, max] = getMinMax<uint32_t>(widthToBits(var.width));
+              validateImmediate(min, max, val);
+            }
+          },
+          immediate.value
+        );
+      }
+    }
+
+    for (const auto& func : m_data.functions) {
+      for (const auto& inst : func.instructions) {
+        for (const auto& operand : inst.operands) {
+          if (!std::holds_alternative<Parser::Immediate>(operand)) {
+            continue;
+          }
+
+          const auto& immediate = std::get<Parser::Immediate>(operand).value;
+
+          std::visit(
+            [&](auto val) {
+              if constexpr (std::is_signed_v<decltype(val)>) {
+                const auto [min, max] =
+                  getMinMax<int32_t>(core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE);
+                validateImmediate(min, max, val);
+              } else {
+                const auto [min, max] = getMinMax<uint32_t>(
+                  core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE
+                );
+                validateImmediate(0u, static_cast<uint32_t>(max), val);
+              }
+            },
+            immediate
+          );
         }
       }
     }

@@ -55,7 +55,7 @@ namespace assembler {
     };
 
     struct Immediate {
-      uint32_t value;
+      std::variant<uint32_t, int32_t> value;
     };
 
     struct NewLine {};

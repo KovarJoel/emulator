@@ -16,10 +16,16 @@ For hexadecimal prefix with `0x...`, for octal prefix with `0o...`,
 for binary prefix with `0b...`.
 They are stored using 24 bits and always sign extended, except for jumps (`JMP`) and branches (`Bxx`)
 where they are zero extended.
+
 For negative immediates use a preceding minus sign (`-`).
 
+For unsigned immediates add the character `u` after the immediate value. Positive values do
+not need to be unsigned in general but only if the positive value is not representable in a
+signed immediate. Note that unsigned immediates can be silently sign extended if their most
+significant bit is set, even though they are unsigned.
+
 Alternatively strings with a length of one can be used to have the immediates value
-be set to the characters ascii value. The character will be placed in the least
+be set to the characters unsigned ascii value. The character will be placed in the least
 significant byte and the upper bytes are set to zero. Strings are denoted with
 double quotes at the front and back, e.g. `"A"`.
 
