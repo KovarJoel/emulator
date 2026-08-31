@@ -32,8 +32,8 @@ function main:
 # ret2: next start x
 # ret3: next start y
 function printUnsigned:
-    ADD   r4, r0, 0xFFFFFF
-    ADD   r5, r0, 0x30      # '0' char
+    ADD   r4, r0, 0xFFFFFFu
+    ADD   r5, r0, "0"
 
     SUB   r0, r1, r0
     BNE   start
@@ -53,7 +53,7 @@ function printUnsigned:
 
   loop_convert:
     REM   r7, r1, 10
-    ADD   r7, r7, 0x30    # '0' char
+    ADD   r7, r7, "0"
 
     SUB   r13, r13, 4
     ST    (r13), r7
@@ -108,7 +108,7 @@ function printString:
     JMP   end
     
   start:
-    ADD   r4, r0, 0xFFFFFF    # color white
+    ADD   r4, r0, 0xFFFFFFu   # color white
 
   loop:
     LD.B  r5, (r1)
@@ -195,19 +195,19 @@ function move:
     LD    r2, $head_pos_y(r0)
     LD    r3, $direction_char(r0)
 
-    SUB   r0, r3, 0x77      # r3 == 'w'
+    SUB   r0, r3, "w"
     BNE   try_a
     SUB   r2, r2, 1
     JMP   check_for_food
     
   try_a:
-    SUB   r0, r3, 0x61      # r3 == 'a'
+    SUB   r0, r3, "a"
     BNE   try_s
     SUB   r1, r1, 1
     JMP   check_for_food
     
   try_s:
-    SUB   r0, r3, 0x73      # r3 == 's'
+    SUB   r0, r3, "s"
     BNE   try_d
     ADD   r2, r2, 1
     JMP   check_for_food
@@ -308,9 +308,9 @@ function sleep:
     ADD   r1, r0, 100000
     LD    r3, $direction_char(r0)
 
-    SUB   r0, r3, 0x61      # r3 == 'a'
+    SUB   r0, r3, "a"
     BE    loop
-    SUB   r0, r3, 0x64      # r3 == 'd'
+    SUB   r0, r3, "d"
     BE    loop
 
   double_time:
@@ -338,27 +338,27 @@ function updateDirection:
     SUB   r0, r3, r5        # new direction == old direction
     BE    consume_event     
 
-    SUB   r0, r3, 0x77      # r3 == 'w'
+    SUB   r0, r3, "w"
     BNE   try_a
-    SUB   r0, r5, 0x73
+    SUB   r0, r5, "s"
     BE    consume_event
     JMP   store_direction
   try_a:
-    SUB   r0, r3, 0x61      # r3 == 'a'
+    SUB   r0, r3, "a"
     BNE   try_s
-    SUB   r0, r5, 0x64
+    SUB   r0, r5, "d"
     BE    consume_event
     JMP   store_direction
   try_s:
-    SUB   r0, r3, 0x73      # r3 == 's'
+    SUB   r0, r3, "s"
     BNE   try_d
-    SUB   r0, r5, 0x77
+    SUB   r0, r5, "w"
     BE    consume_event
     JMP   store_direction
   try_d:
-    SUB   r0, r3, 0x64      # r3 == 'd'
+    SUB   r0, r3, "d"
     BNE   consume_event
-    SUB   r0, r5, 0x61
+    SUB   r0, r5, "a"
     BE    consume_event
     JMP   store_direction
 
@@ -383,7 +383,7 @@ function updateDirection:
 function drawSnake:
   # draw head
     ADD   r1, r0, 0x1FFF32    # green color
-    ADD   r2, r0, 0x40        # @-sign
+    ADD   r2, r0, "@"
     
     LD    r3, $head_pos_x(r0) # r3 = head pos x
     LD    r4, $head_pos_y(r0) # r4 = head pos y
@@ -411,7 +411,7 @@ function drawSnake:
   
   # draw remaining body
     ADD   r2, r0, 0x389620      # darker green color
-    ADD   r3, r0, 0x4f          # 'O' char
+    ADD   r3, r0, "O"
     SUB   r1, r1, 8
     
     SUB   r0, r1, $head_pos_x
@@ -436,7 +436,7 @@ function drawSnake:
 
 function drawBackground:
     ADD   r1, r0, 0x7D6E64    # grey color
-    ADD   r2, r0, 0x23        # #-sign
+    ADD   r2, r0, "#"
 
     ADD   r3, r0, r0          # y coord
   
@@ -491,7 +491,7 @@ function drawFood:
     MUL   r3, r3, 4
 
     ADD   r4, r0, 0x0000FF      # color red
-    ADD   r5, r0, 0x2A          # '*' char
+    ADD   r5, r0, "*"
 
     ST    0x1000(r3), r4
     ST.B  0x1003(r3), r5

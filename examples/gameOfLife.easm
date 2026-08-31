@@ -213,7 +213,7 @@ function generateInitialCells:
     JMP   store
 
   alive:
-    ADD   r5, r0, 0x23        # char = '#'
+    ADD   r5, r0, "#"         # char = '#'
 
   store:
     ST.B  (r1)[r4], r5        # cells[index] = char
@@ -244,7 +244,7 @@ function drawCells:
 
     MUL   r5, r4, 4           # console offset = index * 4
     
-    ADD   r6, r0, 0xFFFFFF    # color = white
+    ADD   r6, r0, 0xFFFFFFu   # color = white
     ST    0x1000(r5), r6
 
     LD.B  r6, (r1)[r4]        # cell = cells[index]
