@@ -88,8 +88,9 @@ namespace assembler {
       if constexpr (std::is_unsigned_v<T>) {
         return { static_cast<T>(0), static_cast<T>((1ull << bits) - 1) };
       }
-
-      return { static_cast<T>(-(1ll << (bits - 1))), static_cast<T>((1ll << (bits - 1)) - 1) };
+      else {
+        return { static_cast<T>(-(1ll << (bits - 1))), static_cast<T>((1ll << (bits - 1)) - 1) };
+      }
     }
 
     static constexpr uint32_t widthToBits(Variable::Width width) {
@@ -102,6 +103,7 @@ namespace assembler {
         return 4 * CHAR_BIT;
       }
       assert(!"invalid width");
+      return 0;
     }
 
   private:
