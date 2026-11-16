@@ -34,6 +34,10 @@ target_compile_options(compiler_flags INTERFACE
   $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Werror -pedantic>
 )
 
+target_include_directories(compiler_flags INTERFACE
+  src
+)
+
 if (MINGW) 
   target_link_libraries(compiler_flags INTERFACE
     stdc++exp
@@ -48,10 +52,6 @@ file(GLOB_RECURSE SRC_CORE_CPP_FILES src/core/*.cpp)
 
 target_sources(core PRIVATE
   ${SRC_CORE_CPP_FILES}
-)
-
-target_include_directories(core PUBLIC
-  src
 )
 
 target_link_libraries(core PRIVATE
@@ -89,7 +89,21 @@ target_link_libraries(emulator PRIVATE
   ftxui::ftxui
 )
 
-# ##################################
+##################################
+
+add_executable(elf2bin)
+
+file(GLOB_RECURSE SRC_ELF2BIN_CPP_FILES src/elf2bin/*.cpp)
+
+target_sources(elf2bin PRIVATE
+  ${SRC_ELF2BIN_CPP_FILES}
+)
+
+target_link_libraries(elf2bin PRIVATE
+  compiler_flags
+)
+
+##################################
 
 include(CTest)
 enable_testing()
