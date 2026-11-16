@@ -2,7 +2,7 @@
 
 The following addressing modes are supported for source operands:
 - register
-- immediate up to 24 bits
+- immediate up to 16 bits
 
 The `FLAGS` register may observe modifications by any instruction.
 Conditional branch instructions must always be placed immediately after a comparison,
@@ -238,14 +238,16 @@ Computes the bitwise `xor` of `src1` and `src2` and stores the result in the des
 If a branch target is in a memory segment other than the code segment the program will be
 terminated immediately.
 
-Labels are always absolute addresses.
+Labels are always relative to the current program counter.
 
 ### Jump
 ```
-JMP label
+JMP link, target [, offset]
 ```
-Unconditionally jumps to the specified label.
-The execution will continue with the first instruction after the label.
+Unconditionally jumps to the specified target.
+If the target is a register, then it optionally adds a signed offset to the target. If no
+offset is specified, it is zero.
+The address of the next instruction is placed into the link register.
 
 ### Branch
 ```
@@ -323,13 +325,13 @@ Stores the source value into the destination value. Equivalent to `ADD dest, r0,
 ```
 CALL function
 ```
-Equivalent to `ADD ra, pc, 12; JMP function`.
+Equivalent to `JMP ra, function`.
 
 ### Return
 ```
 RET
 ```
-Equivalent to `JMP ra`.
+Equivalent to `JMP r0, ra`.
 
 ### Increment
 ```
