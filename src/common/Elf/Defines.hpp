@@ -881,6 +881,12 @@ namespace common::Elf::Defines {
     return h;
   }
 
+  template <typename T>
+  requires std::is_enum_v<T>
+  [[nodiscard]] constexpr bool hasFlag(T value, T flag) noexcept {
+    return std::to_underlying(value & flag);
+  }
+
   static_assert(sizeof(Elf32_Ehdr) == 52);
   static_assert(std::is_trivially_copyable_v<Elf32_Ehdr>);
   static_assert(sizeof(Elf64_Ehdr) == 64);
