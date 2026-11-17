@@ -26,7 +26,8 @@ namespace core {
   private:
     void initializeRegisters();
 
-    instructions::InstructionData fetchAndDecode() const;
+    instructions::InstructionData::RawData fetchInstruction() const;
+    instructions::InstructionData::ParsedData decodeInstruction(instructions::InstructionData::RawData raw_data) const;
 
   private:
     ProcessorState m_state;
