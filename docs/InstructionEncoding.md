@@ -31,14 +31,14 @@ Used for conditional branches with immediate targets.
 //    7 bits     1 bit      4 bits           20 bits
 ```
 
-Used for jumps with immediate targets.
-```c
-    [   OP   ][ MODE ][ LINK ][      JUMP TARGET       ]
-//    7 bits   1 bit   4 bits          20 bits
-```
-
 Used for jumps with register targets.
 ```c
     [   OP   ][ MODE ][ LINK ][ TARGET ][ OFFSET ]
 //    7 bits   1 bit   4 bits   4 bits   16 bits
+```
+
+Used for jumps with immediate targets.
+```c
+    [   OP   ][ MODE ][ LINK ][      JUMP TARGET       ]
+//    7 bits   1 bit   4 bits          20 bits
 ```
