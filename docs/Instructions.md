@@ -12,24 +12,35 @@ Using the `FLAGS` register as destination operand for an instruction is UB.
 ## Memory
 The following addressing modes are supported for both load and store memory accesses
 for the operand refering to the memory location:
-- indirect `(r1)`, equivalent to `Mem[r1]`
-- indirect with immediate displacement `100(r1)`, equivalent to `Mem[r1 + 100]` (use R0 for fixed address)
-- indexed `(r1)[r2]`, equivalent to `Mem[r1 + d * r2]`, where `d` is the width of the instruction
-
-Instructions referring to memory operations may be suffixed with a width specifier.
-`B` for byte, `H` for half word, `W` for word (implicit default),
-e.g. `LD.H` for reading a signed half word (16 bits with sign extension).
+- Indirect `(r1)`, equivalent to `Mem[r1]`, same as `(r1)[r0]`.
+This uses the `R`-Type instructions.
+- Indirect with immediate displacement `100(r1)`, equivalent to `Mem[r1 + 100]` (use R0 for fixed address).
+This uses the `I`-Type instructions.
+- Indexed `(r1)[r2]`, equivalent to `Mem[r1 + d * r2]`, where `d` is the width of the instruction.
+This uses the `R`-Type instructions.
 
 ### Load
 ```
 LD dest, src
-LDZX dest, src
+LDH dest, src
+LDHZX dest, src
+LDB dest, src
+LDBZX dest, src
+
+LDI dest, src
+LDHI dest, src
+LDHZXI dest, src
+LDBI dest, src
+LDBZXI dest, src
 ```
 Loads a value stored at `src` into `dest`.
 The source must refer to an address where at least `d` bytes are available for reading.
 
 `LD` sign-extends with smaller than word size operands.
 `LDZX` zero-extends with smaller than word size operands.
+
+When only reading a partial word, the following instructions can be used:
+`LDB`/`LDBZX` for byte, `LDH`/`LDHZX` for half word e.g. `LDH` for reading a signed half word (16 bits with sign extension).
 
 Reading from an address range without read permissions leads to immediate termination of the program.
 
@@ -40,6 +51,12 @@ Reading from an address range without read permissions leads to immediate termin
 ### Store
 ```
 ST dest, src
+STH dest, src
+STB dest, src
+
+STI dest, src
+STHI dest, src
+STBI dest, src
 ```
 Stores a value in `src` into `dest`.
 The destination must refer to an address where at least `d` bytes can be written to.
@@ -48,11 +65,20 @@ The source must refer to a register. Storing immediates is not possible.
 Storing a less than word sized data type results in only the less significant bytes
 being written to memory.
 
+When only writing a partial word, the following instructions can be used:
+`STB` for byte, `STH` for half word e.g. `STH` for writing a half word.
+
 Writing to an address range without write permissions leads to immediate termination of the program.
+
+## Arithmetic
+
+Instructions ending in `I` use the `I`-Type encoding with immediate values.
+All other arithmetic instructions use the `R`-Type encoding with two register operands.
 
 ### Add
 ```
 ADD dest, src1, src2
+ADDI dest, src1, src2
 ```
 Stores the result of `src1 + src2` into the destination register.
 If the result doesn't fit into a register of the operand size then the MSB of the result
@@ -70,6 +96,7 @@ of the result is different.
 ### Subtract
 ```
 SUB dest, src1, src2
+SUBI dest, src1, src2
 ```
 Stores the result of `src1 - src2` into the destination register.
 If the result doesn't fit into a register of the operand size then the MSB of the result
@@ -89,6 +116,7 @@ with the operand width.
 ### Multiply
 ```
 MUL dest, src1, src2
+MULI dest, src1, src2
 ```
 Stores the result (only the lower word) of `src1 * src2` into the destination register.
 
@@ -105,6 +133,8 @@ of the MSBs of `src1` and `src2`.
 ```
 DIV   dest, src1, src2
 DIVU  dest, src1, src2
+DIVI   dest, src1, src2
+DIVUI  dest, src1, src2
 ```
 Stores the result of `src1 / src2` into the destination register.
 If `src2` is `0`, the program is terminated immediately.
@@ -120,6 +150,8 @@ i.e. both source operands had different signs.
 ```
 REM   dest, src1, src2
 REMU  dest, src1, src2
+REMI   dest, src1, src2
+REMUI  dest, src1, src2
 ```
 Stores the remainder of `src1 / src2` into the destination register.
 If `src2` is `0`, the program is terminated immediately.
@@ -137,6 +169,7 @@ The number of positions to shift/rotate is always interpreted as unsigned value.
 ### Rotate Left
 ```
 ROL dest, src1, src2
+ROLI dest, src1, src2
 ```
 Rotates the value in `src1` to the left by `src2` positions and stores the result in the
 destination operand.
@@ -148,6 +181,7 @@ destination operand.
 ### Rotate Right
 ```
 ROR dest, src1, src2
+RORI dest, src1, src2
 ```
 Rotates the value in `src1` to the right by `src2` positions and stores the result in the
 destination operand.
@@ -159,6 +193,7 @@ destination operand.
 ### Logical Left shift
 ```
 SLL dest, src1, src2
+SLLI dest, src1, src2
 ```
 Shifts the value in `src1` to the left (towards the MSB) by `src2` positions and stores
 the result in the destination operand.
@@ -175,6 +210,7 @@ For each shifted position, the MSB is shifted into the carry flag and the LSB is
 ### Logical Right shift
 ```
 SRL dest, src1, src2
+SRLI dest, src1, src2
 ```
 Shifts the value in `src1` to the right (towards the  LSB) by `src2` positions and stores
 the result in the destination operand.
@@ -191,6 +227,7 @@ For each shifted position, the LSB is shifted into the carry flag and the MSB is
 ### Arithmetic Right shift
 ```
 SRA dest, src1, src2
+SRAI dest, src1, src2
 ```
 Shifts the value in `src1` to the right (towards the LSB) by `src2` positions and stores
 the result in the destination operand.
@@ -207,6 +244,7 @@ the MSB of `src1`, acting as a sign extension.
 ### And
 ```
 AND dest, src1, src2
+ANDI dest, src1, src2
 ```
 Computes the bitwise `and` of `src1` and `src2` and stores the result in the destination register.
 
@@ -217,6 +255,7 @@ Computes the bitwise `and` of `src1` and `src2` and stores the result in the des
 ### Or
 ```
 OR dest, src1, src2
+ORI dest, src1, src2
 ```
 Computes the bitwise `or` of `src1` and `src2` and stores the result in the destination register.
 
@@ -227,6 +266,7 @@ Computes the bitwise `or` of `src1` and `src2` and stores the result in the dest
 ### Exclusive Or
 ```
 XOR dest, src1, src2
+XORI dest, src1, src2
 ```
 Computes the bitwise `xor` of `src1` and `src2` and stores the result in the destination register.
 
@@ -238,16 +278,19 @@ Computes the bitwise `xor` of `src1` and `src2` and stores the result in the des
 If a branch target is in a memory segment other than the code segment the program will be
 terminated immediately.
 
-Labels are always relative to the current program counter.
+Labels are always relative to the current program counter if not explicitly mentioned otherwise.
 
 ### Jump
 ```
-JMP link, target [, offset]
+JMP link, target
+JMPR link, target, offset
 ```
 Unconditionally jumps to the specified target.
-If the target is a register, then it optionally adds a signed offset to the target. If no
-offset is specified, it is zero.
 The address of the next instruction is placed into the link register.
+
+`JMP` jumps to the PC-relative immediate target address. This uses `J`-Type instruction encoding.
+`JMPR` jumps to the absolute address stored in the target register and adds the offset to it.
+This uses `P`-Type instruction encoding.
 
 ### Branch
 ```
@@ -255,6 +298,7 @@ Bxx label
 ```
 Checks the condition and jumps to the specified immediate label if the condition is met.
 Branches can not be used with registers as source for the label.
+This uses the `B`-Type instruction encoding.
 
 | Instruction | Description |
 | ----------- | ----------- |
@@ -309,6 +353,8 @@ The generated word will be in the unsigned range `[src1, src2]`.
 **Sign Flag:** Set iff the MSB of the result is 1.
 
 ## Pseudo Instructions
+(Not implemented yet)
+
 ### No-Operation
 ```
 NOP
