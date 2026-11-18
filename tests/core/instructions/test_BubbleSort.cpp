@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "core/Instructions/InstructionData.hpp"
-#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/Instructions/Instructions.hpp"
 #include "core/Processor.hpp"
 
 #include <algorithm>
@@ -15,8 +14,8 @@ using namespace core;
 using namespace core::instructions;
 
 namespace {
-  constexpr uint32_t BASE_ADDRESS = 0x2'0000;
-  constexpr uint32_t VALUE_COUNT = 10;
+  constexpr int32_t BASE_ADDRESS = 0x2'0000;
+  constexpr int32_t VALUE_COUNT = 10;
   constexpr std::array<int32_t, VALUE_COUNT> VALUES { -1,
                                                       10,
                                                       0,
@@ -29,48 +28,49 @@ namespace {
                                                       2 };
 
   constexpr uint32_t ENTRY_POINT = Memory::OFFSET_CODE;
-  constexpr uint32_t LABEL_OUTER = ENTRY_POINT + 2 * (3 + 3);
-  constexpr uint32_t LABEL_INNER = LABEL_OUTER + 3;
-  constexpr uint32_t LABEL_NO_SWAP = LABEL_INNER + 2 * 3 + 1 * 4 + 4 * (3 + 3);
+  constexpr int32_t LABEL_OUTER = ENTRY_POINT + 4 * InstructionData::ENCODING_SIZE;
+  constexpr int32_t LABEL_INNER = LABEL_OUTER + 1 * InstructionData::ENCODING_SIZE;
+  constexpr int32_t LABEL_NO_SWAP = LABEL_INNER + 7 * InstructionData::ENCODING_SIZE;
 
   using enum Opcode;
-  using enum InstructionData::Width;
-  using enum RegisterOrImmediate::SourceMode;
   const auto INSTRUCTION_DATA = std::to_array<InstructionData>({
-    { ADD,  Word, 1, { RegisterOrImmediate { Immediate, BASE_ADDRESS } }       }, // r1 = BASE_ADDRESS
-    { ADD,
-     Word,        2,
-     { RegisterOrImmediate { Immediate, VALUE_COUNT - 1 } }                    }, // r2 = VALUE_COUNT - 1
+    InstructionData::ParsedData { ITypeData { 1, 0, static_cast<int16_t>(BASE_ADDRESS >> 16) }, ADDI        }, // r1 = BASE_ADDRESS >> 16
+    InstructionData::ParsedData { ITypeData { 1, 1, 16 }, SLLI                                              }, // r1 = (BASE_ADDRESS >> 16) << 16
+    InstructionData::ParsedData { ITypeData { 1, 1, static_cast<int16_t>(BASE_ADDRESS) }, ORI               }, // r1 = BASE_ADDRESS
+    InstructionData::ParsedData { ITypeData { 2, 0, VALUE_COUNT - 1 }, ADDI                                 }, // r2 = VALUE_COUNT - 1
 
     // outer loop
-    { ADD,  Word, 3, {}                                                        }, // r3 = 0
+    InstructionData::ParsedData { RTypeData { 3, 0, 0 }, ADD                                                }, // r3 = 0
 
     // inner loop
-    { ADD,  Word, 4, { RegisterOrImmediate { Register, 1 }, { Register, 3 } }  }, // r4 = r1 + r3
-    { LD,   Word, 5, { RegisterOrImmediate { Immediate, 0 }, { Register, 4 } } }, // r5 = Mem[r4]
-    { LD,   Word, 6, { RegisterOrImmediate { Immediate, 4 }, { Register, 4 } } }, // r6 = Mem[r4+4]
-    { SUB,  Word, 0, { RegisterOrImmediate { Register, 5 }, { Register, 6 } }  }, // if r5 <= r6
-    { BLE,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_NO_SWAP } }      }, //    goto no swap
-    { ST,   Word, 6, { RegisterOrImmediate { Immediate, 0 }, { Register, 4 } } }, // Mem[r4] = r6
-    { ST,   Word, 5, { RegisterOrImmediate { Immediate, 4 }, { Register, 4 } } }, // Mem[r4+4] = r5
+    InstructionData::ParsedData { RTypeData { 4, 1, 3 }, ADD                                                }, // r4 = r1 + r3
+    InstructionData::ParsedData { ITypeData { 5, 4, 0 }, LDI                                                }, // r5 = Mem[r4]
+    InstructionData::ParsedData { ITypeData { 6, 4, 4 }, LDI                                                }, // r6 = Mem[r4 + 4]
+    InstructionData::ParsedData { RTypeData { 0, 5, 6 }, SUB                                                }, // if r5 <= r6
+    InstructionData::ParsedData { BTypeData { ConditionType::BranchIfLessEqual, LABEL_NO_SWAP }, B          }, //   goto no swap
+    InstructionData::ParsedData { ITypeData { 6, 4, 0 }, STI                                                }, // Mem[r4] = r6
+    InstructionData::ParsedData { ITypeData { 5, 4, 4 }, STI                                                }, // Mem[r4+4] = r5
 
     // no swap
-    { ADD,  Word, 3, { RegisterOrImmediate { Register, 3 }, { Immediate, 4 } } }, // r3 += 4
-    { ADD,  Word, 7, { RegisterOrImmediate { Register, 2 } }                   }, // r7 = r2
-    { SLL,  Word, 7, { RegisterOrImmediate { Register, 7 }, { Immediate, 2 } } }, // r7 *= 4
-    { SUB,  Word, 0, { RegisterOrImmediate { Register, 3 }, { Register, 7 } }  }, // if r3 < r7
-    { BLT,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_INNER } }        }, //    goto inner
-    { SUB,  Word, 2, { RegisterOrImmediate { Register, 2 }, { Immediate, 1 } } }, // --r2
-    { SUB,  Word, 0, { RegisterOrImmediate { Register, 2 } }                   }, // if r2 > 0
-    { BGT,  Word, 0, { RegisterOrImmediate { Immediate, LABEL_OUTER } }        }, //    goto outer
+    InstructionData::ParsedData { ITypeData { 3, 3, 4 }, ADDI                                               }, // r3 += 4
+    InstructionData::ParsedData { RTypeData { 7, 0, 2 }, ADD                                                }, // r7 = r2
+    InstructionData::ParsedData { ITypeData { 7, 7, 2 }, SLLI                                               }, // r7 *= 4
+    InstructionData::ParsedData { RTypeData { 0, 3, 7 }, SUB                                                }, // if r3 < r7
+    InstructionData::ParsedData { BTypeData { ConditionType::BranchIfLess, LABEL_INNER }, B                 }, //   goto inner
+    InstructionData::ParsedData { ITypeData { 2, 2, 1 }, SUBI                                               }, // --r2
+    InstructionData::ParsedData { RTypeData { 0, 2, 0 }, SUB                                                }, // if r2 > 0
+    InstructionData::ParsedData { BTypeData { ConditionType::BranchIfGreater, LABEL_OUTER }, B              }, //   goto outer
 
-    { HALT, Word, 0, {}                                                        }
+    InstructionData::ParsedData { RTypeData { 0, 0, 0 }, HALT                                               }
   });
 
   auto createBinary() {
     std::vector<std::byte> instruction_data {};
     for (const auto& instruction : INSTRUCTION_DATA) {
-      instruction_data.append_range(instruction.encode());
+      const auto raw = instruction.getRaw();
+      for (const auto b : raw) {
+        instruction_data.push_back(static_cast<std::byte>(b));
+      }
     }
 
     std::vector<std::byte> data {};
@@ -98,8 +98,9 @@ namespace {
 TEST_CASE("Encoding and decoding bubble sort", "[Instructions]") {
   for (const auto& inst : INSTRUCTION_DATA) {
     auto copy = inst;
-    copy.decode(copy.encode());
-    CHECK(copy == inst);
+    copy = copy.getRaw();
+    copy.encode(copy.decode());
+    CHECK(copy.getRaw() == inst.getRaw());
   }
 }
 

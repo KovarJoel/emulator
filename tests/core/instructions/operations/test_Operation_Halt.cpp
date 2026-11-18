@@ -2,31 +2,21 @@
 #include <cstdint>
 
 #include "core/Exceptions.hpp"
-#include "core/Instructions/Instruction.hpp"
-#include "core/Instructions/InstructionData.hpp"
+#include "core/Instructions/Instructions.hpp"
 #include "core/Memory.hpp"
 #include "core/ProcessorState.hpp"
 #include "core/RegisterBank.hpp"
 
 using namespace core;
 using namespace core::instructions;
-using namespace core::instructions::operations;
 
 namespace {
-  Instruction generateHalt() {
-    const InstructionData data { Opcode::HALT, InstructionData::Width::Word, 0, {} };
-
-    Instruction inst;
-    inst.setData(data);
-    return inst;
+  InstructionData::ParsedData generateHalt() {
+    return { RTypeData { 0, 0, 0 }, Opcode::HALT };
   }
 
-  Instruction generateNop() {
-    const InstructionData data { Opcode::ADD, InstructionData::Width::Word, 0, {} };
-
-    Instruction inst;
-    inst.setData(data);
-    return inst;
+  InstructionData::ParsedData generateNop() {
+    return { RTypeData { 0, 0, 0 }, Opcode::ADD };
   }
 }
 
@@ -36,11 +26,11 @@ TEST_CASE("Halt halts the execution", "[Instructions::Operations::Halt]") {
   auto inst = generateHalt();
 
   try {
-    inst.execute(state);
+    execute(inst, state);
     CHECK(!"should be unreachable");
   } catch (...) {}
 
-  CHECK_THROWS_AS(inst.execute(state), exceptions::Halt);
+  CHECK_THROWS_AS(execute(inst, state), exceptions::Halt);
 }
 
 TEST_CASE("State is unchanged", "[Instructions::Operations::Halt]") {
@@ -57,7 +47,7 @@ TEST_CASE("State is unchanged", "[Instructions::Operations::Halt]") {
   auto inst = generateHalt();
 
   const auto oldState = state;
-  CHECK_THROWS(inst.execute(state));
+  CHECK_THROWS(execute(inst, state));
 
   CHECK(oldState.memory == state.memory);
   for (size_t i = 0; i < RegisterBank::REGISTER_COUNT; ++i) {
@@ -65,7 +55,7 @@ TEST_CASE("State is unchanged", "[Instructions::Operations::Halt]") {
     if (i == PC_INDEX) {
       CHECK(oldState.registers[i] != state.registers[i]);
       CHECK(
-        oldState.registers[i].get<uint32_t>() + inst.getData().getEncodingSize()
+        oldState.registers[i].get<uint32_t>() + InstructionData::ENCODING_SIZE
         == state.registers[i].get<uint32_t>()
       );
     } else {
@@ -81,17 +71,17 @@ TEST_CASE("PC and CYCL updated", "[Instructions::Operations::Halt]") {
 
   ProcessorState state;
   ProcessorState oldState = state;
-  nop.execute(state);
+  execute(nop, state);
   CHECK(
-    oldState.registers.getPC().get<uint32_t>() + nop.getData().getEncodingSize()
+    oldState.registers.getPC().get<uint32_t>() + InstructionData::ENCODING_SIZE
     == state.registers.getPC().get<uint32_t>()
   );
   CHECK(oldState.cycle_count + 1 == state.cycle_count);
 
   oldState = state;
-  CHECK_THROWS(halt.execute(state));
+  CHECK_THROWS(execute(halt, state));
   CHECK(
-    oldState.registers.getPC().get<uint32_t>() + halt.getData().getEncodingSize()
+    oldState.registers.getPC().get<uint32_t>() + InstructionData::ENCODING_SIZE
     == state.registers.getPC().get<uint32_t>()
   );
   CHECK(oldState.cycle_count + 1 == state.cycle_count);

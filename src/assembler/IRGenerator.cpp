@@ -110,13 +110,6 @@ namespace assembler {
     instruction.opcode = std::get<Parser::Mnemonic>(m_parser_tokens[index].token).opcode;
     ++index;
 
-    if (std::holds_alternative<Parser::WidthSpecifier>(m_parser_tokens[index].token)) {
-      instruction.width = std::get<Parser::WidthSpecifier>(m_parser_tokens[index].token).width;
-      ++index;
-    } else {
-      instruction.width = Instruction::Width::Word;
-    }
-
     instruction.operands = getOperands(function, index);
 
     return instruction;
@@ -129,7 +122,9 @@ namespace assembler {
     std::vector<IRGenerator::Operand> operands {};
 
     while (true) {
-      if (std::holds_alternative<Parser::Register>(m_parser_tokens[index].token)) {
+      if (std::holds_alternative<Parser::BranchCondition>(m_parser_tokens[index].token)) {
+        operands.push_back(std::get<Parser::BranchCondition>(m_parser_tokens[index].token));
+      } else if (std::holds_alternative<Parser::Register>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::Register>(m_parser_tokens[index].token));
       } else if (std::holds_alternative<Parser::Immediate>(m_parser_tokens[index].token)) {
         operands.push_back(std::get<Parser::Immediate>(m_parser_tokens[index].token));

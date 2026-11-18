@@ -1,7 +1,7 @@
 #include "Emulator.hpp"
 
 #include "core/Exceptions.hpp"
-#include "core/Instructions/Operations.hpp"
+#include "core/Instructions/InstructionData.hpp"
 
 #include <iostream>
 #include <print>
@@ -26,10 +26,10 @@ namespace emulator {
 
   void Emulator::processorCallback(
     [[maybe_unused]] core::ProcessorState& state,
-    const core::instructions::InstructionData& instruction
+    const core::instructions::InstructionData::ParsedData& instruction
   ) {
     using enum core::instructions::Opcode;
-    if (m_last_instruction.getOpcode() == ST) {
+    if (m_last_instruction.opcode == ST) {
       m_app.PostEvent(ftxui::Event::Custom);
     }
 

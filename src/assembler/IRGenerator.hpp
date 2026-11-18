@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AssemblerData.hpp"
-#include "core/Instructions/Operations.hpp"
+#include "core/Instructions/InstructionData.hpp"
 #include "Parser.hpp"
 
 #include <cassert>
@@ -34,14 +34,13 @@ namespace assembler {
     };
 
     using Operand = std::
-      variant<Parser::Register, Parser::Immediate, Parser::BranchTarget, Parser::VariableReference>;
+      variant<Parser::BranchCondition, Parser::Register, Parser::Immediate, Parser::BranchTarget, Parser::VariableReference>;
 
     struct Instruction {
       using Opcode = core::instructions::Opcode;
       using Width = Parser::WidthSpecifier::Width;
 
       Opcode opcode;
-      Width width;
       std::vector<Operand> operands;
     };
 

@@ -1,83 +1,65 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "core/Instructions/InstructionData.hpp"
-#include "core/Instructions/Operations.hpp"
-#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/Instructions/Instructions.hpp"
 
 using namespace core;
 using namespace core::instructions;
 
 TEST_CASE("Encoding register only", "[Instructions::InstructionData]") {
   using enum Opcode;
-  using enum InstructionData::Width;
-  using enum RegisterOrImmediate::SourceMode;
 
-  InstructionData data {
-    ADD,
-    Word,
-    1,
-    { RegisterOrImmediate { Register, 2 }, { Register, 3 } }
-  };
-  const auto encoding = data.encode();
-  CHECK(encoding.size() == 3);
+  InstructionData data { InstructionData::ParsedData { RTypeData { 1, 2, 3 }, ADD }};
+  const auto encoding = data.getRaw();
+
+  CHECK(encoding.size() == InstructionData::ENCODING_SIZE);
   CHECK(static_cast<Opcode>(encoding[0]) == ADD);
 
   const uint8_t remaining_1 = static_cast<uint8_t>(encoding[1]);
-  CHECK(remaining_1 == 0b1000'0100);
+  CHECK(remaining_1 == 0b0001'0010);
 
   const uint8_t remaining_2 = static_cast<uint8_t>(encoding[2]);
-  CHECK(remaining_2 == 0b1000'0110);
+  CHECK(remaining_2 == 0b0011'0000);
+
+  const uint8_t remaining_3 = static_cast<uint8_t>(encoding[3]);
+  CHECK(remaining_3 == 0);
 }
 
 TEST_CASE("Encoding load with displacement", "[Instructions::InstructionData]") {
   using enum Opcode;
-  using enum InstructionData::Width;
-  using enum RegisterOrImmediate::SourceMode;
 
-  InstructionData data {
-    LD,
-    HalfWord,
-    7,
-    { RegisterOrImmediate { Immediate, 12'345 }, { Register, 3 } }
-  };
-  const auto encoding = data.encode();
-  CHECK(encoding.size() == 6);
-  CHECK(static_cast<Opcode>(encoding[0]) == LD);
+  InstructionData data { InstructionData::ParsedData { ITypeData { 7, 3, 12'345 }, LDHI }};
+
+  const auto encoding = data.getRaw();
+  CHECK(encoding.size() == InstructionData::ENCODING_SIZE);
+  CHECK(static_cast<Opcode>(encoding[0]) == LDHI);
 
   const uint8_t remaining_1 = static_cast<uint8_t>(encoding[1]);
-  CHECK(remaining_1 == 0b0101'1100);
+  CHECK(remaining_1 == 0b0111'0011);
 
-  const uint8_t remaining_2 = static_cast<uint8_t>(encoding[2]);
-  CHECK(remaining_2 == 0b0010'0110);
-
-  uint32_t immediate = 0;
-  memcpy(&immediate, &encoding[3], 3);
+  int16_t immediate = 0;
+  memcpy(&immediate, &encoding[2], sizeof immediate);
   CHECK(immediate == 12'345);
 }
 
 TEST_CASE("Encoding and decoding", "[Instructions::InstructionData]") {
   using enum Opcode;
-  using enum InstructionData::Width;
-  using enum RegisterOrImmediate::SourceMode;
 
-  const InstructionData add {
-    ADD,
-    Word,
-    1,
-    { RegisterOrImmediate { Register, 2 }, { Register, 3 } }
-  };
-  const InstructionData load {
-    LD,
-    HalfWord,
-    7,
-    { RegisterOrImmediate { Immediate, 12'345 }, { Register, 3 } }
-  };
+  InstructionData::ParsedData add { RTypeData { 1, 2, 3 }, ADD };
+  InstructionData::ParsedData load { ITypeData { 7, 3, 12'345 }, LDHI };
 
   InstructionData copy = add;
-  copy.decode(copy.encode());
-  CHECK(copy == add);
+  copy = copy.getRaw();
+
+  CHECK(copy.decode().opcode == add.opcode);
+  CHECK(std::get<RTypeData>(copy.decode().data).dest_reg_addr == std::get<RTypeData>(add.data).dest_reg_addr);
+  CHECK(std::get<RTypeData>(copy.decode().data).src1_reg_addr == std::get<RTypeData>(add.data).src1_reg_addr);
+  CHECK(std::get<RTypeData>(copy.decode().data).src2_reg_addr == std::get<RTypeData>(add.data).src2_reg_addr);
 
   copy = load;
-  copy.decode(copy.encode());
-  CHECK(copy == load);
+  copy = copy.getRaw();
+
+  CHECK(copy.decode().opcode == load.opcode);
+  CHECK(std::get<ITypeData>(copy.decode().data).dest_reg_addr == std::get<ITypeData>(load.data).dest_reg_addr);
+  CHECK(std::get<ITypeData>(copy.decode().data).src1_reg_addr == std::get<ITypeData>(load.data).src1_reg_addr);
+  CHECK(std::get<ITypeData>(copy.decode().data).immediate_value == std::get<ITypeData>(load.data).immediate_value);
 }

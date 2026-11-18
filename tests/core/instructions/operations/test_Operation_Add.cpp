@@ -1,8 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "core/Instructions/Instruction.hpp"
-#include "core/Instructions/InstructionData.hpp"
-#include "core/Instructions/RegisterOrImmediate.hpp"
+#include "core/Instructions/Instructions.hpp"
 #include "core/ProcessorState.hpp"
 #include "core/Register.hpp"
 #include "core/Types.hpp"
@@ -14,7 +12,6 @@
 
 using namespace core;
 using namespace core::instructions;
-using namespace core::instructions::operations;
 
 namespace {
   ProcessorState state {};
@@ -24,29 +21,27 @@ namespace {
   std::uniform_int_distribution bool_distribution { 0, 1 };
 
   template <EmulatorType T>
-  Instruction generateAdd(uint32_t dest_addr, T value1, T value2) {
-    const std::array<T, 2> values { value1, value2 };
-    std::array<RegisterOrImmediate, 2> sources {};
-    for (size_t i = 0; i < sources.size(); ++i) {
-      if (bool_distribution(random_engine)) {
-        sources[i].setImmediateValue(values[i]);
-      } else {
-        uint32_t register_addr = 0;
-        do {
-          register_addr = register_distribution(random_engine);
-        } while (i
-                 && sources[i - 1].getSourceMode() == InstructionData::SourceMode::Register
-                 && sources[i - 1].getRegisterAddress() == register_addr);
-        state.registers[register_addr].set(values[i]);
-        sources[i].setRegisterAddress(register_addr);
-      }
+  InstructionData::ParsedData generateAdd(uint32_t dest_addr, T value1, T value2) {
+    const auto reg_addr1 = register_distribution(random_engine);
+    state.registers[reg_addr1].set(value1);
+
+    if (value2 > INT16_MAX  || std::cmp_less(value2, INT16_MIN) || bool_distribution(random_engine)) {
+      uint32_t reg_addr2 = 0;
+      do {
+        reg_addr2 = register_distribution(random_engine);
+      } while (reg_addr1 == reg_addr2);
+      state.registers[reg_addr2].set(value2);
+
+      return InstructionData::ParsedData {
+        .data = RTypeData { dest_addr, reg_addr1, reg_addr2 },
+        .opcode = Opcode::ADD
+      };
+    } else {
+      return InstructionData::ParsedData {
+        .data = ITypeData { dest_addr, reg_addr1, static_cast<std::int16_t>(value2) },
+        .opcode = Opcode::ADDI
+      };
     }
-
-    const InstructionData data { Opcode::ADD, InstructionData::Width::Word, dest_addr, sources };
-
-    Instruction inst;
-    inst.setData(data);
-    return inst;
   }
 }
 
@@ -58,8 +53,8 @@ TEST_CASE("Random additions without overflow", "[Instructions::Operations::Add]"
 
     const int sum = value1 + value2;
 
-    const Instruction inst = generateAdd(dest_addr, value1, value2);
-    inst.execute(state);
+    const InstructionData::ParsedData inst = generateAdd(dest_addr, value1, value2);
+    execute(inst, state);
 
     CHECK(state.registers[dest_addr].get<int32_t>() == sum);
 
@@ -77,8 +72,8 @@ TEST_CASE("Random additions without overflow", "[Instructions::Operations::Add]"
 }
 
 TEST_CASE("Overflow", "[Instructions::Operations::Add]") {
-  Instruction inst = generateAdd(1, INT32_MAX, 1);
-  inst.execute(state);
+  InstructionData::ParsedData inst = generateAdd(1, INT32_MAX, 1);
+  execute(inst, state);
   CHECK(state.registers[1].get<uint32_t>() == 0x8000'0000);
   CHECK(state.registers[1].get<int32_t>() == INT32_MIN);
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero));
@@ -87,7 +82,7 @@ TEST_CASE("Overflow", "[Instructions::Operations::Add]") {
   CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow));
 
   inst = generateAdd(1, -2, -INT32_MAX);
-  inst.execute(state);
+  execute(inst, state);
   CHECK(state.registers[1].get<uint32_t>() == 0x7FFF'FFFF);
   CHECK(state.registers[1].get<int32_t>() == INT_MAX);
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero));
@@ -97,8 +92,8 @@ TEST_CASE("Overflow", "[Instructions::Operations::Add]") {
 }
 
 TEST_CASE("Carry", "[Instructions::Operations::Add]") {
-  Instruction inst = generateAdd(1, 0xFFFF'FFFF, 1u);
-  inst.execute(state);
+  InstructionData::ParsedData inst = generateAdd(1, 0xFFFF'FFFF, 1u);
+  execute(inst, state);
   CHECK(state.registers[1].get<uint32_t>() == 0);
   CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Zero));
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Sign));
@@ -106,7 +101,7 @@ TEST_CASE("Carry", "[Instructions::Operations::Add]") {
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow));
 
   inst = generateAdd(1, 0xFFFF'FFFF, 0xFFFF'FFFF);
-  inst.execute(state);
+  execute(inst, state);
   CHECK(state.registers[1].get<uint32_t>() == 0xFFFF'FFFE);
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero));
   CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Sign));
@@ -114,7 +109,7 @@ TEST_CASE("Carry", "[Instructions::Operations::Add]") {
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Overflow));
 
   inst = generateAdd(1, 0xFFFF'FFFF, 0u);
-  inst.execute(state);
+  execute(inst, state);
   CHECK(state.registers[1].get<uint32_t>() == 0xFFFF'FFFF);
   CHECK(!state.registers.getFLAGS().getBit(Register::FlagIndex::Zero));
   CHECK(state.registers.getFLAGS().getBit(Register::FlagIndex::Sign));

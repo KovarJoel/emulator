@@ -6,7 +6,6 @@
 #include "AssemblerError.hpp"
 
 #include "core/Instructions/InstructionData.hpp"
-#include "core/Instructions/Operations.hpp"
 
 #include <cstddef>
 #include <span>
@@ -33,6 +32,10 @@ namespace assembler {
       std::string label;
     };
 
+    struct BranchCondition {
+      core::instructions::ConditionType condition;
+    };
+
     struct VariableReference {
       std::string name;
     };
@@ -46,7 +49,9 @@ namespace assembler {
     };
 
     struct WidthSpecifier {
-      using Width = core::instructions::InstructionData::Width;
+      enum class Width {
+        Byte, HalfWord, Word
+      };
       Width width;
     };
 
@@ -67,6 +72,7 @@ namespace assembler {
       FunctionLabel,
       BranchLabel,
       BranchTarget,
+      BranchCondition,
       VariableReference,
       VariableDefinition,
       Mnemonic,
@@ -109,10 +115,17 @@ namespace assembler {
     void parseOperandSeparator();
     void parseWidthSpecifier();
 
-    void parseStoreOperandsLine();
-    void parseLoadOperandsLine();
-    void parseJumpOperandsLine();
-    void parseBranchOperandsLine();
+    void parseBranchConditionType();
+
+    void parseRType();
+    void parseIType();
+    void parseBType();
+    void parsePType();
+    void parseJType();
+    // void parseStoreOperandsLine();
+    // void parseLoadOperandsLine();
+    // void parseJumpOperandsLine();
+    // void parseBranchOperandsLine();
 
     void parseImmediate();
 

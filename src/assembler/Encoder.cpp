@@ -1,7 +1,6 @@
 #include "Encoder.hpp"
 
 #include "core/Instructions/InstructionData.hpp"
-#include "core/Instructions/Operations.hpp"
 #include "core/Memory.hpp"
 
 #include <algorithm>
@@ -52,21 +51,28 @@ namespace assembler {
           }
         }
 
-        instructions.emplace_back(
-          inst.opcode,
-          inst.width,
-          createInstructionDestination(inst),
-          createInstructionSources(function, inst)
-        );
+        const auto parsed_data = createInstructionParsedData(function, inst);
+        instructions.emplace_back(parsed_data);
+        current_pc += core::instructions::InstructionData::ENCODING_SIZE;
 
-        current_pc += instructions.back().getEncodingSize();
+        // instructions.emplace_back(
+        //   inst.opcode,
+        //   inst.width,
+        //   createInstructionDestination(inst),
+        //   createInstructionSources(function, inst)
+        // );
+
+        // current_pc += instructions.back().getEncodingSize();
       }
     }
 
     std::vector<std::byte> binary_instructions {};
 
     for (const auto& inst : instructions) {
-      binary_instructions.append_range(inst.encode());
+      const auto raw = inst.getRaw();
+      for (auto& b : raw) {
+        binary_instructions.emplace_back(static_cast<std::byte>(b));
+      }
     }
 
     return binary_instructions;
@@ -77,19 +83,118 @@ namespace assembler {
 
     for (auto& function : m_ir_data.functions) {
       for (auto& inst : function.instructions) {
-        data.append_range(
-          core::instructions::InstructionData { inst.opcode,
-                                                inst.width,
-                                                createInstructionDestination(inst),
-                                                createInstructionSources(function, inst) }
-            .encode()
-        );
+        const auto bytes = core::instructions::InstructionData{ createInstructionParsedData(function, inst) }.getRaw();
+        for (const auto& b : bytes) {
+          data.push_back(static_cast<std::byte>(b));
+        }
+        //data.append_range(
+          //core::instructions::InstructionData { inst.opcode,
+          //                                      inst.width,
+          //                                      createInstructionDestination(inst),
+          //                                      createInstructionSources(function, inst) }
+          //  .encode()
+        //);
       }
     }
 
     return data;
   }
+  
+  const core::instructions::InstructionData::ParsedData Encoder::createInstructionParsedData(
+    const IRGenerator::Function& func,
+    const IRGenerator::Instruction& inst
+  ) {
+    using namespace core::instructions;
+    using enum core::instructions::EncodingType;
+    
+    InstructionData::ParsedData data{};
+    data.opcode = inst.opcode;
 
+    switch (core::instructions::opcodeGetEncodingType(inst.opcode)) {
+      case R_TYPE:
+        data.data = RTypeData {
+          .dest_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .src1_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
+          .src2_reg_addr = std::get<Parser::Register>(inst.operands[2]).address
+        };
+        break;
+      case I_TYPE:
+        data.data = ITypeData {
+          .dest_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .src1_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
+          .immediate_value = static_cast<std::int16_t>(getImmediateValue(func, inst.operands[2]))
+        };
+        break;
+      case B_TYPE:
+        data.data = BTypeData {
+          .branch_condition_type = std::get<Parser::BranchCondition>(inst.operands[0]).condition,
+          .relative_jump_target = getImmediateValue(func, inst.operands[1])
+        };
+        break;
+      case P_TYPE:
+        data.data = PTypeData {
+          .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .absolut_jump_target_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
+          .relative_jump_target_offset = static_cast<std::int16_t>(getImmediateValue(func, inst.operands[2]))
+        };
+        break;
+      case J_TYPE:
+        data.data = JTypeData {
+          .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .relative_jump_target = getImmediateValue(func, inst.operands[1])
+        };
+        break;
+    }
+
+    return data;
+  }
+
+  std::int32_t Encoder::getImmediateValue(
+    const IRGenerator::Function& func,
+    const IRGenerator::Operand& operand
+  ) const {
+    if (std::holds_alternative<Parser::Immediate>(operand)) {
+      std::int32_t value = 0;
+      std::visit([&](auto&& imm) { value = static_cast<std::int32_t>(imm); },
+        std::get<Parser::Immediate>(operand).value
+      );
+      return value;
+    } else if (std::holds_alternative<Parser::BranchTarget>(operand)) {
+      const std::string& branch_name = std::get<Parser::BranchTarget>(operand).label;
+
+      const auto branch_it =
+        std::ranges::find_if(func.branches, [&branch_name](const auto& branch) {
+          return branch.name == branch_name;
+        });
+
+      if (branch_it == func.branches.end()) {
+        const auto func_it =
+          std::ranges::find_if(m_ir_data.functions, [&branch_name](const auto& f) {
+            return f.name == branch_name;
+          });
+        assert(func_it != m_ir_data.functions.end());
+        
+        return func_it->address;
+      } else {
+        return branch_it->address;
+      }
+    } else if (std::holds_alternative<Parser::VariableReference>(operand)) {
+      const std::string& variable_name =
+        std::get<Parser::VariableReference>(operand).name;
+
+      const auto variable_it =
+        std::ranges::find_if(m_ir_data.variables, [&variable_name](auto&& var) {
+          return var.name == variable_name;
+        });
+      assert(variable_it != m_ir_data.variables.end());
+
+      return variable_it->address;
+    } else {
+      assert(!"invalid variant alternative");
+    }
+  }
+  
+#if 0
   uint32_t Encoder::createInstructionDestination(const IRGenerator::Instruction& inst) {
     if (inst.opcode == core::instructions::Opcode::ST) {
       return std::get<Parser::Register>(inst.operands.back()).address;
@@ -163,6 +268,7 @@ namespace assembler {
 
     return sources;
   }
+#endif
 
   core::Memory::Header Encoder::createHeader(size_t code_size) {
     core::Memory::Header header {};

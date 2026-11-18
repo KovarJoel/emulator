@@ -3,7 +3,6 @@
 #include "assembler/AssemblerError.hpp"
 #include "assembler/Lexer.hpp"
 #include "core/Exceptions.hpp"
-#include "core/Instructions/Operations.hpp"
 #include "core/RegisterBank.hpp"
 #include "Utility.hpp"
 
@@ -77,7 +76,7 @@ namespace assembler {
     }
 
     try {
-      core::instructions::opcodeFromString(token.value);
+      std::ignore = core::instructions::opcodeFromString(token.value);
     } catch (const core::exceptions::InvalidOperation&) {
       return false;
     }
@@ -439,6 +438,7 @@ namespace assembler {
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
   }
 
+  /*
   void Parser::parseLoadOperandsLine() {
     parseRegisterOperand();
     parseOperandSeparator();
@@ -502,60 +502,113 @@ namespace assembler {
 
     parseNewLine();
   }
+  */
+
+  void Parser::parseBranchConditionType() {
+    assert(!m_remaining_lexer_tokens.empty());
+    if (m_remaining_lexer_tokens[0].type != Lexer::TokenType::Identifier) {
+      throw createError(
+        ErrorType::Parser_ExpectedBranchConditionType,
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    }
+    
+    using enum core::instructions::ConditionType;
+    core::instructions::ConditionType condition_type{};
+    const auto type = lower(m_remaining_lexer_tokens[0].value);
+
+    if      (type == "e")   condition_type = BranchIfEqual;
+    else if (type == "ne")  condition_type = BranchIfNotEqual;
+    else if (type == "gt")  condition_type = BranchIfGreater;
+    else if (type == "lt")  condition_type = BranchIfLess;
+    else if (type == "ge")  condition_type = BranchIfGreaterEqual;
+    else if (type == "le")  condition_type = BranchIfLessEqual;
+    else if (type == "gtu") condition_type = BranchUnsignedIfGreater;
+    else if (type == "ltu") condition_type = BranchUnsignedIfLess;
+    else if (type == "geu") condition_type = BranchUnsignedIfGreaterEqual;
+    else if (type == "leu") condition_type = BranchUnsignedIfLessEqual;
+    else if (type == "bc")  condition_type = BranchCarry;
+    else if (type == "bnc") condition_type = BranchNotCarry;
+    else if (type == "bo")  condition_type = BranchOverflow;
+    else if (type == "bno") condition_type = BranchNotOverflow;
+    else {
+      throw createError(
+        ErrorType::Parser_ExpectedBranchConditionType,
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    }
+
+    m_tokens.emplace_back(
+      BranchCondition{ condition_type },
+      m_remaining_lexer_tokens[0].line,
+      m_remaining_lexer_tokens[0].column
+    );
+  }
+
+  void Parser::parseRType() {
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseRegisterOperand();
+    parseNewLine();
+  }
+
+  void Parser::parseIType() {
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseImmediate();
+    parseNewLine();
+  }
+
+  void Parser::parseBType() {
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseBranchConditionType();
+    parseOperandSeparator();
+    parseImmediate();
+    parseNewLine();
+  }
+
+  void Parser::parsePType() {
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseImmediate();
+    parseNewLine();
+  }
+  
+  void Parser::parseJType() {
+    parseRegisterOperand();
+    parseOperandSeparator();
+    parseImmediate();
+    parseNewLine();
+  }
 
   void Parser::parseOperandsLine(core::instructions::Opcode opcode) {
     using namespace core::instructions;
-    if (opcode == Opcode::LDZX || opcode == Opcode::LD) {
-      parseLoadOperandsLine();
-      return;
-    } else if (opcode == Opcode::ST) {
-      parseStoreOperandsLine();
-      return;
-    } else if (opcodeGetType(opcode) == OpcodeType::Jump) {
-      parseJumpOperandsLine();
-      return;
-    } else if (opcodeGetType(opcode) == OpcodeType::Branch) {
-      parseBranchOperandsLine();
-      return;
+    switch (opcodeGetEncodingType(opcode)) {
+      case EncodingType::R_TYPE:
+        parseRType();
+        return;
+      case EncodingType::I_TYPE:
+        parseIType();
+        return;
+      case EncodingType::B_TYPE:
+        parseBType();
+        return;
+      case EncodingType::P_TYPE:
+        parsePType();
+        return;
+      case EncodingType::J_TYPE:
+        parseJType();
+        return;
     }
-
-    const size_t dest_count = opcodeGetDestCount(opcode);
-    const size_t src_count = opcodeGetSrcCount(opcode);
-
-    for (size_t i = 0; i < dest_count; ++i) {
-      parseRegisterOperand();
-      if (i + 1 < dest_count || src_count) {
-        parseOperandSeparator();
-      }
-    }
-
-    for (size_t i = 0; i < src_count; ++i) {
-      assert(!m_remaining_lexer_tokens.empty());
-
-      if (
-        m_remaining_lexer_tokens[0].type == Lexer::TokenType::Minus
-        || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number
-        || m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dollar
-        || m_remaining_lexer_tokens[0].type == Lexer::TokenType::String
-      )
-      {
-        parseImmediate();
-      } else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Identifier) {
-        parseRegisterOperand();
-      } else {
-        throw createError(
-          ErrorType::Parser_ExpectedOperand,
-          m_remaining_lexer_tokens[0].line,
-          m_remaining_lexer_tokens[0].column
-        );
-      }
-
-      if (i + 1 < src_count) {
-        parseOperandSeparator();
-      }
-    }
-
-    parseNewLine();
   }
 
   const std::vector<Parser::Token>& Parser::run(std::span<const Lexer::Token> lexer_tokens) {
@@ -640,14 +693,6 @@ namespace assembler {
     m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
 
     assert(!m_remaining_lexer_tokens.empty());
-    if (
-      opcodeGetType(opcode) == OpcodeType::Memory
-      && m_remaining_lexer_tokens[0].type == Lexer::TokenType::Dot
-    )
-    {
-      parseWidthSpecifier();
-    }
-
     parseOperandsLine(opcode);
   }
 

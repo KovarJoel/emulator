@@ -66,6 +66,9 @@ namespace assembler {
     case ErrorType::Parser_ExpectedBranchTarget:
       std::println(out, "Parser: Expected branch target");
       break;
+    case ErrorType::Parser_ExpectedBranchConditionType:
+      std::println(out, "Parser: Expected branch condition type");
+      break;
     case ErrorType::Parser_ExpectedJumpTarget:
       std::println(out, "Parser: Expected jump target");
       break;

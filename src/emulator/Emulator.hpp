@@ -17,7 +17,7 @@ namespace emulator {
   private:
     void processorCallback(
       core::ProcessorState& state,
-      const core::instructions::InstructionData& instruction
+      const core::instructions::InstructionData::ParsedData& instruction
     );
 
   private:
@@ -27,6 +27,6 @@ namespace emulator {
     ftxui::App m_app { ftxui::App::FitComponent() };
     ftxui::Component m_console { ftxui::Make<Console>(m_processor.getState()) };
 
-    core::instructions::InstructionData m_last_instruction {};
+    core::instructions::InstructionData::ParsedData m_last_instruction {};
   };
 }

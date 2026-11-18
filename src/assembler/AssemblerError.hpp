@@ -28,6 +28,7 @@ namespace assembler {
 
     Parser_ExpectedBranchLabel,
     Parser_ExpectedBranchTarget,
+    Parser_ExpectedBranchConditionType,
     Parser_ExpectedJumpTarget,
 
     Parser_ExpectedVariableName,

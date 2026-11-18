@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/Instructions/RegisterOrImmediate.hpp"
 #include "core/Memory.hpp"
 #include "IRGenerator.hpp"
 
@@ -13,12 +12,22 @@ namespace assembler {
     const std::vector<std::byte>& run(const IRGenerator::Data& data);
 
   private:
-    std::vector<std::byte> createInstructionsData();
-    uint32_t createInstructionDestination(const IRGenerator::Instruction& inst);
-    std::array<core::instructions::RegisterOrImmediate, 2> createInstructionSources(
+    const core::instructions::InstructionData::ParsedData createInstructionParsedData(
       const IRGenerator::Function& func,
       const IRGenerator::Instruction& inst
     );
+
+    std::int32_t getImmediateValue(
+      const IRGenerator::Function& func,
+      const IRGenerator::Operand& operand
+    ) const;
+
+    std::vector<std::byte> createInstructionsData();
+    // uint32_t createInstructionDestination(const IRGenerator::Instruction& inst);
+    // std::array<core::instructions::RegisterOrImmediate, 2> createInstructionSources(
+    //   const IRGenerator::Function& func,
+    //   const IRGenerator::Instruction& inst
+    // );
 
     core::Memory::Header createHeader(size_t code_size);
     std::vector<std::byte> createHeaderData(const core::Memory::Header& header);
