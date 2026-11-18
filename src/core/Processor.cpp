@@ -3,6 +3,7 @@
 #include "Exceptions.hpp"
 #include "Instructions/Instructions.hpp"
 
+#include <cassert>
 #include <mutex>
 
 namespace core {
@@ -56,7 +57,8 @@ namespace core {
 
     const auto raw_data = m_state.memory.getRaw().subspan(pc, instructions::InstructionData::ENCODING_SIZE);
     instructions::InstructionData::RawData raw_data_array{};
-    std::copy(raw_data.begin(), raw_data.end(), raw_data_array.begin());
+    assert(raw_data.size() == raw_data_array.size());
+    memcpy(raw_data_array.data(), raw_data.data(), raw_data.size());
     return raw_data_array;
   }
 
