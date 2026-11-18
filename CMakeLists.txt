@@ -31,7 +31,7 @@ add_library(compiler_flags INTERFACE)
 
 target_compile_options(compiler_flags INTERFACE
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /permissive->
-  $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Werror -pedantic>
+  $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Werror -pedantic -g>
 )
 
 if (MINGW) 
