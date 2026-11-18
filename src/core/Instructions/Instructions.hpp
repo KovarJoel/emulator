@@ -285,7 +285,7 @@ namespace core::instructions {
       const auto& decoded = std::get<DecodedType>(data.data);
       
       const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = static_cast<std::uint64_t>(static_cast<std::int64_t>(decoded.immediate_value));
+      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.immediate_value));
       
       InstructionBaseAdd::execute(decoded.dest_reg_addr, value1, value2, state);
     }
@@ -338,7 +338,7 @@ namespace core::instructions {
       const auto& decoded = std::get<DecodedType>(data.data);
       
       const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = static_cast<std::uint64_t>(static_cast<std::int64_t>(decoded.immediate_value));
+      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.immediate_value));
       
       InstructionBaseSubtract::execute(decoded.dest_reg_addr, value1, value2, state);
     }
@@ -356,12 +356,10 @@ namespace core::instructions {
         result > std::numeric_limits<uint32_t>::max()
       );
 
-      const bool value1_signed = getWordBit(static_cast<uint32_t>(value1), Register::INDEX_MSB);
-      const bool value2_signed = getWordBit(static_cast<uint32_t>(value2), Register::INDEX_MSB);
-      const bool result_signed = getWordBit(static_cast<uint32_t>(result), Register::INDEX_MSB);
+      const int64_t signed_result = static_cast<int64_t>(static_cast<int32_t>(value1)) * static_cast<int64_t>(static_cast<int32_t>(value2));
       state.registers.getFLAGS().setBit(
         Register::FlagIndex::Overflow,
-        (value1_signed != value2_signed) != result_signed
+        signed_result < INT32_MIN || signed_result > INT32_MAX
       );
 
       updateFlagsZeroAndSign(static_cast<uint32_t>(result), state);
@@ -895,12 +893,12 @@ namespace core::instructions {
       auto& pc = state.registers.getPC();
       
       const std::uint32_t return_address = pc.get<std::uint32_t>() + InstructionData::ENCODING_SIZE;
-      state.registers[decoded.link_reg_addr].set(return_address); 
-      
       const std::uint32_t target_address =
         state.registers[decoded.absolut_jump_target_reg_addr].get<std::uint32_t>()
         + static_cast<std::int32_t>(decoded.relative_jump_target_offset)
       ;
+
+      state.registers[decoded.link_reg_addr].set(return_address); 
       pc.set(target_address);
     }
   };
@@ -1012,7 +1010,7 @@ namespace core::instructions {
           }
           return;
         case ConditionType::BranchUnsignedIfLessEqual:
-          if (flags.getBit(Zero) || flags.getBit(Sign) != flags.getBit(Overflow)) {
+          if (flags.getBit(Carry) || flags.getBit(Zero)) {
             pc.set(target);
           } else {
             advancePC(state);
@@ -1098,12 +1096,19 @@ namespace core::instructions {
     inline static std::mt19937 m_generator { std::random_device {}() };
   };
 
-  void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
-    switch (data.opcode) {
-      #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE(mnemonic, class, ...) case Opcode::mnemonic: class::execute(data, state); return;
-        EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
-      #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE
+  inline void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
+    try {
+      switch (data.opcode) {
+        #define EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE(mnemonic, class, ...) case Opcode::mnemonic: class::execute(data, state); break;
+          EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST(EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE)
+        #undef EMULATOR_CORE_INSTRUCTIONS_OPCODE_LIST_CASE
+        default:
+          throw exceptions::InvalidOperation{};
+      }
+      ++state.cycle_count;
+    } catch (const exceptions::Halt&) {
+      ++state.cycle_count;
+      throw;
     }
-    throw exceptions::InvalidOperation{};
   }
 }

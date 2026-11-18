@@ -6,6 +6,7 @@
 #include <cctype>
 #include <cstdint>
 #include <string_view>
+#include <utility>
 #include <variant>
 
 // clang-format off
@@ -182,6 +183,10 @@ namespace core::instructions {
     InstructionData() = default;
     InstructionData(RawData raw_data)
       : m_raw_data{ raw_data } {}
+    InstructionData(const ParsedData& parsed_data)
+      : m_raw_data{} {
+      encode(parsed_data);
+    }
 
     template <typename T>
     constexpr void encode(Opcode opcode, const T& instr_data) noexcept {
@@ -216,7 +221,7 @@ namespace core::instructions {
       std::visit([&](auto&& data) { encode(instr_data.opcode, data); }, instr_data.data);
     }
 
-    [[nodiscard]] constexpr ParsedData decode() const noexcept {
+    [[nodiscard]] constexpr ParsedData decode() const {
       ParsedData parsed{};
       parsed.opcode = getOpcode();
 
@@ -240,6 +245,10 @@ namespace core::instructions {
       return parsed;
     }
 
+    [[nodiscard]] constexpr RawData getRaw() const noexcept {
+      return m_raw_data;
+    }
+
   private:
     [[nodiscard]] constexpr Opcode getOpcode() const noexcept {
       return static_cast<Opcode>(m_raw_data[0]);
@@ -258,7 +267,9 @@ namespace core::instructions {
     }
 
     [[nodiscard]] constexpr std::int16_t getImmediate() const noexcept {
-      return m_raw_data[2] | (m_raw_data[3] << 8);
+      return static_cast<std::int16_t>(
+        static_cast<std::uint16_t>(m_raw_data[2]) | static_cast<std::uint16_t>(m_raw_data[3] << 8)
+      );
     }
 
     [[nodiscard]] constexpr ConditionType getConditionType() const noexcept {
@@ -266,7 +277,15 @@ namespace core::instructions {
     }
 
     [[nodiscard]] constexpr std::int32_t getJumpTargetImmediate() const noexcept {
-      return (m_raw_data[1] & 0x0f) | (m_raw_data[2] << 4) | (m_raw_data[3] << 12);
+      const auto value = static_cast<std::uint32_t>(m_raw_data[1] & 0x0f) 
+        | static_cast<std::uint32_t>((m_raw_data[2] << 4))
+        | static_cast<std::uint32_t>(m_raw_data[3] << 12)
+      ;
+
+      struct signed20 {
+        std::int32_t val : 20;
+      };
+      return static_cast<std::int32_t>(signed20{ static_cast<std::int32_t>(value) }.val);
     }
 
     [[nodiscard]] constexpr std::size_t getLinkRegister() const noexcept {
@@ -282,7 +301,7 @@ namespace core::instructions {
     }
 
     constexpr void setOpcode(Opcode opcode) noexcept {
-      m_raw_data[0] = (m_raw_data[0] & 0b0000'0001) | (static_cast<std::uint8_t>(opcode) << 1);
+      m_raw_data[0] = std::to_underlying(opcode);
     }
 
     constexpr void setDestRegister(std::size_t reg) noexcept {
@@ -298,8 +317,9 @@ namespace core::instructions {
     }
 
     constexpr void setImmediate(std::int16_t immediate) noexcept {
-      m_raw_data[2] = static_cast<std::uint8_t>(immediate);
-      m_raw_data[3] = static_cast<std::uint8_t>(immediate >> 8);
+      const auto value = static_cast<std::uint16_t>(immediate);
+      m_raw_data[2] = static_cast<std::uint8_t>(value);
+      m_raw_data[3] = static_cast<std::uint8_t>(value >> 8);
     }
 
     constexpr void setCondition(ConditionType condition) noexcept {
@@ -307,9 +327,10 @@ namespace core::instructions {
     }
 
     constexpr void setJumpTargetImmediate(std::int32_t immediate) noexcept {
-      m_raw_data[1] = (m_raw_data[1] & 0xf0) | (static_cast<std::uint8_t>(immediate) & 0x0f);
-      m_raw_data[2] = static_cast<std::uint8_t>(immediate >> 4);
-      m_raw_data[3] = static_cast<std::uint8_t>(immediate >> 12);
+      const auto value = static_cast<std::uint32_t>(immediate);
+      m_raw_data[1] = (m_raw_data[1] & 0xf0) | (static_cast<std::uint8_t>(value) & 0x0f);
+      m_raw_data[2] = static_cast<std::uint8_t>(value >> 4);
+      m_raw_data[3] = static_cast<std::uint8_t>(value >> 12);
     }
 
     constexpr void setLinkRegister(std::size_t reg) noexcept {
@@ -321,8 +342,9 @@ namespace core::instructions {
     }
 
     constexpr void setJumpTargetOffset(std::int16_t offset) noexcept {
-      m_raw_data[2] = static_cast<std::uint8_t>(offset);
-      m_raw_data[3] = static_cast<std::uint8_t>(offset >> 8);
+      const auto value = static_cast<std::uint16_t>(offset);
+      m_raw_data[2] = static_cast<std::uint8_t>(value);
+      m_raw_data[3] = static_cast<std::uint8_t>(value >> 8);
     }
 
   private:
