@@ -241,6 +241,8 @@ the MSB of `src1`, acting as a sign extension.
 **Carry Flag:** Set to the last bit shifted out of the destination register.
 
 ## Bitwise Logical Operations
+The logical operations treat the immediate as unsigned value.
+
 ### And
 ```
 AND dest, src1, src2

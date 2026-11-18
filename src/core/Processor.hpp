@@ -15,7 +15,7 @@ namespace core {
     void loadProgram(const std::filesystem::path& file_path);
 
     void run(
-      std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)>
+      std::function<void(ProcessorState& state, const instructions::InstructionData::ParsedData& instruction)>
         callback = [](auto&, auto&) {}
     );
 

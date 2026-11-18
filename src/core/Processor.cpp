@@ -1,8 +1,7 @@
 #include "Processor.hpp"
 
 #include "Exceptions.hpp"
-#include "Instructions/Instruction.hpp"
-#include "Instructions/InstructionData.hpp"
+#include "Instructions/Instructions.hpp"
 
 #include <mutex>
 
@@ -18,21 +17,18 @@ namespace core {
   }
 
   void Processor::run(
-    std::function<void(ProcessorState& state, const instructions::InstructionData& instruction)>
+    std::function<void(ProcessorState& state, const instructions::InstructionData::ParsedData& instruction)>
       callback
   ) {
     initializeRegisters();
-
-    instructions::Instruction instruction;
 
     try {
       while (true) {
         const auto raw_data = fetchInstruction();
         const auto instruction_data = decodeInstruction(raw_data);
 
-        instruction.setData(instruction_data);
         callback(m_state, instruction_data);
-        instruction.execute(m_state);
+        instructions::execute(instruction_data, m_state);
       }
     } catch ([[maybe_unused]] const exceptions::Halt& ex) {}
   }
