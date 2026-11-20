@@ -260,11 +260,11 @@ namespace assembler {
             [&](auto val) {
               if constexpr (std::is_signed_v<decltype(val)>) {
                 const auto [min, max] =
-                  getMinMax<int32_t>(core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE);
+                  getMinMax<int32_t>(core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE * 2);
                 validateImmediate(min, max, val);
               } else {
                 const auto [min, max] = getMinMax<uint32_t>(
-                  core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE
+                  core::instructions::InstructionData::ENCODING_WIDTH_IMMEDIATE * 2
                 );
                 validateImmediate(0u, static_cast<uint32_t>(max), val);
               }

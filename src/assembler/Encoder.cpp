@@ -37,23 +37,25 @@ namespace assembler {
     std::vector<InstructionData> instructions {};
 
     uint32_t current_pc = core::Memory::OFFSET_CODE;
+    size_t instructions_count = 0;
 
     // first pass for sizes
     for (auto& function : m_ir_data.functions) {
       function.address = current_pc;
 
-      const size_t prev_funcs_instructions_count = instructions.size();
+      const size_t prev_funcs_instructions_count = instructions_count;
 
       for (auto& inst : function.instructions) {
         for (auto& label : function.branches) {
-          if (label.instruction_id == instructions.size() - prev_funcs_instructions_count) {
+          if (label.instruction_id == instructions_count - prev_funcs_instructions_count) {
             label.address = current_pc;
           }
         }
 
         const auto parsed_data = createInstructionParsedData(function, inst);
-        instructions.emplace_back(parsed_data);
-        current_pc += core::instructions::InstructionData::ENCODING_SIZE;
+        instructions.append_range(parsed_data);
+        current_pc += parsed_data.size() * core::instructions::InstructionData::ENCODING_SIZE;
+        ++instructions_count;
 
         // instructions.emplace_back(
         //   inst.opcode,
@@ -83,9 +85,11 @@ namespace assembler {
 
     for (auto& function : m_ir_data.functions) {
       for (auto& inst : function.instructions) {
-        const auto bytes = core::instructions::InstructionData{ createInstructionParsedData(function, inst) }.getRaw();
-        for (const auto& b : bytes) {
-          data.push_back(static_cast<std::byte>(b));
+        const auto expanded_inst = createInstructionParsedData(function, inst);
+        for (auto& i : expanded_inst) {
+          for (const auto& b : core::instructions::InstructionData{ i }.getRaw()) {
+            data.push_back(static_cast<std::byte>(b));
+          }
         }
         //data.append_range(
           //core::instructions::InstructionData { inst.opcode,
@@ -100,7 +104,39 @@ namespace assembler {
     return data;
   }
   
-  const core::instructions::InstructionData::ParsedData Encoder::createInstructionParsedData(
+  core::instructions::Opcode opcodeItoR(core::instructions::Opcode opcode) {
+    using enum core::instructions::Opcode;
+    switch (opcode) {
+      case LDI: return LD;
+      case LDHI: return LDH;
+      case LDHZXI: return LDHZX;
+      case LDBI: return LDB;
+      case LDBZXI: return LDBZX;
+      case STI: return ST;
+      case STHI: return STH;
+      case STBI: return STB;
+      case ADDI: return ADD;
+      case SUBI: return SUB;
+      case MULI: return MUL;
+      case DIVI: return DIV;
+      case DIVUI: return DIVU;
+      case REMI: return REM;
+      case REMUI: return REMU;
+      case ROLI: return ROL;
+      case RORI: return ROR;
+      case SLLI: return SLL;
+      case SRLI: return SRL;
+      case SRAI: return SRA;
+      case ANDI: return AND;
+      case ORI: return OR;
+      case XORI: return XOR;
+      //case JMPI: return JMPR;
+      default:
+      throw "Invalid opcode for opcodeItoR";
+    }
+  }
+
+  const std::vector<core::instructions::InstructionData::ParsedData> Encoder::createInstructionParsedData(
     const IRGenerator::Function& func,
     const IRGenerator::Instruction& inst
   ) {
@@ -119,6 +155,40 @@ namespace assembler {
         };
         break;
       case I_TYPE:
+        {
+          auto immediate = getImmediateValue(func, inst.operands[2]);
+          if (true || immediate < INT16_MIN || immediate > INT16_MAX) {
+            switch (inst.opcode) {
+              case Opcode::LDI:
+              case Opcode::STI:
+                immediate /= 4;
+                break;
+              case Opcode::LDHI:
+              case Opcode::LDHZXI:
+              case Opcode::STHI:
+                immediate /= 2;
+                break;
+              case Opcode::LDBI:
+              case Opcode::LDBZXI:
+              case Opcode::STBI:
+                immediate /= 1;
+                break;
+              default:
+                break;
+            }
+
+            return {
+              { ITypeData { 11, 0, static_cast<int16_t>(immediate >> 16) }, Opcode::ADDI },
+              { ITypeData { 11, 11, 16 }, Opcode::SLLI },
+              { ITypeData { 11, 11, static_cast<int16_t>(immediate & 0xFFFF) }, Opcode::ORI },
+              { RTypeData {
+                std::get<Parser::Register>(inst.operands[0]).address,
+                std::get<Parser::Register>(inst.operands[1]).address,
+                11
+              }, opcodeItoR(inst.opcode) }
+            };
+          }
+        }
         data.data = ITypeData {
           .dest_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
           .src1_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
@@ -126,12 +196,24 @@ namespace assembler {
         };
         break;
       case B_TYPE:
+        {
+          const auto immediate = getImmediateValue(func, inst.operands[1]);
+          if (immediate > ((1 << 19) - 1)) {
+            throw "immediate for b type to big";
+          }
+        }
         data.data = BTypeData {
           .branch_condition_type = std::get<Parser::BranchCondition>(inst.operands[0]).condition,
           .relative_jump_target = getImmediateValue(func, inst.operands[1])
         };
         break;
       case P_TYPE:
+        {
+          const auto immediate = getImmediateValue(func, inst.operands[2]);
+          if (immediate > ((1 << 15) - 1)) {
+            throw "immediate for b type to big";
+          }
+        }
         data.data = PTypeData {
           .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
           .absolut_jump_target_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
@@ -139,6 +221,12 @@ namespace assembler {
         };
         break;
       case J_TYPE:
+        {
+          const auto immediate = getImmediateValue(func, inst.operands[1]);
+          if (immediate > ((1 << 19) - 1)) {
+            throw "immediate for b type to big";
+          }
+        }
         data.data = JTypeData {
           .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
           .relative_jump_target = getImmediateValue(func, inst.operands[1])
@@ -146,7 +234,7 @@ namespace assembler {
         break;
     }
 
-    return data;
+    return { data };
   }
 
   std::int32_t Encoder::getImmediateValue(

@@ -12,7 +12,7 @@ namespace assembler {
     const std::vector<std::byte>& run(const IRGenerator::Data& data);
 
   private:
-    const core::instructions::InstructionData::ParsedData createInstructionParsedData(
+    const std::vector<core::instructions::InstructionData::ParsedData> createInstructionParsedData(
       const IRGenerator::Function& func,
       const IRGenerator::Instruction& inst
     );

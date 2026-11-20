@@ -122,6 +122,9 @@ namespace assembler {
     void parseBType();
     void parsePType();
     void parseJType();
+
+    void parseBranchTargetImmediate();
+
     // void parseStoreOperandsLine();
     // void parseLoadOperandsLine();
     // void parseJumpOperandsLine();

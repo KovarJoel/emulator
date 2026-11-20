@@ -518,7 +518,9 @@ namespace assembler {
     core::instructions::ConditionType condition_type{};
     const auto type = lower(m_remaining_lexer_tokens[0].value);
 
-    if      (type == "e")   condition_type = BranchIfEqual;
+    if      (type == "a")   condition_type = BranchAlways;
+    else if (type == "n")   condition_type = BranchNever;
+    else if (type == "e")   condition_type = BranchIfEqual;
     else if (type == "ne")  condition_type = BranchIfNotEqual;
     else if (type == "gt")  condition_type = BranchIfGreater;
     else if (type == "lt")  condition_type = BranchIfLess;
@@ -545,6 +547,7 @@ namespace assembler {
       m_remaining_lexer_tokens[0].line,
       m_remaining_lexer_tokens[0].column
     );
+    m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
   }
 
   void Parser::parseRType() {
@@ -566,11 +569,9 @@ namespace assembler {
   }
 
   void Parser::parseBType() {
-    parseRegisterOperand();
-    parseOperandSeparator();
     parseBranchConditionType();
     parseOperandSeparator();
-    parseImmediate();
+    parseBranchTargetImmediate();
     parseNewLine();
   }
 
@@ -586,8 +587,29 @@ namespace assembler {
   void Parser::parseJType() {
     parseRegisterOperand();
     parseOperandSeparator();
-    parseImmediate();
+    parseBranchTargetImmediate();
     parseNewLine();
+  }
+
+  void Parser::parseBranchTargetImmediate() {
+    assert(!m_remaining_lexer_tokens.empty());
+
+    if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Number) {
+      parseNumber();
+    } else if (m_remaining_lexer_tokens[0].type == Lexer::TokenType::Identifier) {
+      m_tokens.emplace_back(
+        BranchTarget { m_remaining_lexer_tokens[0].value },
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+      m_remaining_lexer_tokens = m_remaining_lexer_tokens.subspan(1);
+    } else {
+      throw createError(
+        ErrorType::Parser_ExpectedBranchTarget,
+        m_remaining_lexer_tokens[0].line,
+        m_remaining_lexer_tokens[0].column
+      );
+    }
   }
 
   void Parser::parseOperandsLine(core::instructions::Opcode opcode) {
