@@ -149,9 +149,9 @@ namespace assembler {
     switch (core::instructions::opcodeGetEncodingType(inst.opcode)) {
       case R_TYPE:
         data.data = RTypeData {
-          .dest_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
-          .src1_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
-          .src2_reg_addr = std::get<Parser::Register>(inst.operands[2]).address
+          .reg1_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .reg2_addr = std::get<Parser::Register>(inst.operands[1]).address,
+          .reg3_addr = std::get<Parser::Register>(inst.operands[2]).address
         };
         break;
       case I_TYPE:
@@ -190,9 +190,9 @@ namespace assembler {
           }
         }
         data.data = ITypeData {
-          .dest_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
-          .src1_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
-          .immediate_value = static_cast<std::int16_t>(getImmediateValue(func, inst.operands[2]))
+          .reg1_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .reg2_addr = std::get<Parser::Register>(inst.operands[1]).address,
+          .imm16 = static_cast<std::int16_t>(getImmediateValue(func, inst.operands[2]))
         };
         break;
       case B_TYPE:
@@ -203,21 +203,8 @@ namespace assembler {
           }
         }
         data.data = BTypeData {
-          .branch_condition_type = std::get<Parser::BranchCondition>(inst.operands[0]).condition,
-          .relative_jump_target = getImmediateValue(func, inst.operands[1])
-        };
-        break;
-      case P_TYPE:
-        {
-          const auto immediate = getImmediateValue(func, inst.operands[2]);
-          if (immediate > ((1 << 15) - 1)) {
-            throw "immediate for b type to big";
-          }
-        }
-        data.data = PTypeData {
-          .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
-          .absolut_jump_target_reg_addr = std::get<Parser::Register>(inst.operands[1]).address,
-          .relative_jump_target_offset = static_cast<std::int16_t>(getImmediateValue(func, inst.operands[2]))
+          .condition = std::get<Parser::BranchCondition>(inst.operands[0]).condition,
+          .imm20 = getImmediateValue(func, inst.operands[1])
         };
         break;
       case J_TYPE:
@@ -228,8 +215,8 @@ namespace assembler {
           }
         }
         data.data = JTypeData {
-          .link_reg_addr = std::get<Parser::Register>(inst.operands[0]).address,
-          .relative_jump_target = getImmediateValue(func, inst.operands[1])
+          .reg1_addr = std::get<Parser::Register>(inst.operands[0]).address,
+          .imm20 = getImmediateValue(func, inst.operands[1])
         };
         break;
     }

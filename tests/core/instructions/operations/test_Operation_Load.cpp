@@ -73,7 +73,7 @@ TEST_CASE("Invalid read access throws", "[Instructions::Operations::Load]") {
   CHECK_NOTHROW(execute(load, state));
 
   state.registers[1].set(Memory::RAM_SIZE - 1);
-  std::get<ITypeData>(load.data).immediate_value = 0;
+  std::get<ITypeData>(load.data).imm16 = 0;
   load.opcode = Opcode::LDBI;
   CHECK_NOTHROW(execute(load, state));
 

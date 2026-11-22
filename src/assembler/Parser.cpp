@@ -575,15 +575,6 @@ namespace assembler {
     parseNewLine();
   }
 
-  void Parser::parsePType() {
-    parseRegisterOperand();
-    parseOperandSeparator();
-    parseRegisterOperand();
-    parseOperandSeparator();
-    parseImmediate();
-    parseNewLine();
-  }
-  
   void Parser::parseJType() {
     parseRegisterOperand();
     parseOperandSeparator();
@@ -623,9 +614,6 @@ namespace assembler {
         return;
       case EncodingType::B_TYPE:
         parseBType();
-        return;
-      case EncodingType::P_TYPE:
-        parsePType();
         return;
       case EncodingType::J_TYPE:
         parseJType();

@@ -33,10 +33,10 @@ namespace core::instructions {
       
       std::uint32_t address = 0;
       if constexpr (std::is_same_v<DecodedType, RTypeData>) {
-        address = state.registers[decoded.src1_reg_addr].template get<std::uint32_t>()
-          + state.registers[decoded.src2_reg_addr].template get<std::uint32_t>() * sizeof(T);
+        address = state.registers[decoded.reg2_addr].template get<std::uint32_t>()
+          + state.registers[decoded.reg3_addr].template get<std::uint32_t>() * sizeof(T);
       } else if constexpr (std::is_same_v<DecodedType, ITypeData>) {
-        address = state.registers[decoded.src1_reg_addr].template get<std::uint32_t>() + static_cast<std::int32_t>(decoded.immediate_value);
+        address = state.registers[decoded.reg2_addr].template get<std::uint32_t>() + static_cast<std::int32_t>(decoded.imm16);
       } else {
         static_assert(false);
       }
@@ -46,7 +46,7 @@ namespace core::instructions {
         std::lock_guard<std::mutex> lock { state.memory.getMutex() };
         result = state.memory.get<T>(address);
       }
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
     }
@@ -158,14 +158,14 @@ namespace core::instructions {
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
       
-      const T value = state.registers[decoded.dest_reg_addr].template get<T>();
+      const T value = state.registers[decoded.reg1_addr].template get<T>();
       
       std::uint32_t address = 0;
       if constexpr (std::is_same_v<DecodedType, RTypeData>) {
-        address = state.registers[decoded.src1_reg_addr].template get<std::uint32_t>()
-          + state.registers[decoded.src2_reg_addr].template get<std::uint32_t>() * sizeof(T);
+        address = state.registers[decoded.reg2_addr].template get<std::uint32_t>()
+          + state.registers[decoded.reg3_addr].template get<std::uint32_t>() * sizeof(T);
       } else if constexpr (std::is_same_v<DecodedType, ITypeData>) {
-        address = state.registers[decoded.src1_reg_addr].template get<std::uint32_t>() + static_cast<std::int32_t>(decoded.immediate_value);
+        address = state.registers[decoded.reg2_addr].template get<std::uint32_t>() + static_cast<std::int32_t>(decoded.imm16);
       } else {
         static_assert(false);
       }
@@ -269,10 +269,10 @@ namespace core::instructions {
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
       
-      const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const std::uint64_t value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const std::uint64_t value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
       
-      InstructionBaseAdd::execute(decoded.dest_reg_addr, value1, value2, state);
+      InstructionBaseAdd::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -284,10 +284,10 @@ namespace core::instructions {
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
       
-      const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.immediate_value));
+      const std::uint64_t value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.imm16));
       
-      InstructionBaseAdd::execute(decoded.dest_reg_addr, value1, value2, state);
+      InstructionBaseAdd::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -322,10 +322,10 @@ namespace core::instructions {
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
       
-      const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const std::uint64_t value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const std::uint64_t value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
       
-      InstructionBaseSubtract::execute(decoded.dest_reg_addr, value1, value2, state);
+      InstructionBaseSubtract::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -337,10 +337,10 @@ namespace core::instructions {
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
       
-      const std::uint64_t value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.immediate_value));
+      const std::uint64_t value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const std::uint64_t value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.imm16));
       
-      InstructionBaseSubtract::execute(decoded.dest_reg_addr, value1, value2, state);
+      InstructionBaseSubtract::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -374,9 +374,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
-      InstructionBaseMultiply::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
+      InstructionBaseMultiply::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -387,9 +387,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.immediate_value));
-      InstructionBaseMultiply::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = static_cast<std::uint32_t>(static_cast<std::int32_t>(decoded.imm16));
+      InstructionBaseMultiply::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -420,9 +420,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::int32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::int32_t>();
-      InstructionBaseDiv::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::int32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::int32_t>();
+      InstructionBaseDiv::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -433,9 +433,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const std::int32_t value1 = state.registers[decoded.src1_reg_addr].get<std::int32_t>();
-      const std::int32_t value2 = decoded.immediate_value;
-      InstructionBaseDiv::execute(decoded.dest_reg_addr, value1, value2, state);
+      const std::int32_t value1 = state.registers[decoded.reg2_addr].get<std::int32_t>();
+      const std::int32_t value2 = decoded.imm16;
+      InstructionBaseDiv::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -446,9 +446,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
-      InstructionBaseDiv::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
+      InstructionBaseDiv::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -459,9 +459,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = static_cast<std::uint32_t>(decoded.immediate_value);
-      InstructionBaseDiv::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = static_cast<std::uint32_t>(decoded.imm16);
+      InstructionBaseDiv::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -492,9 +492,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::int32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::int32_t>();
-      InstructionBaseRemainder::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::int32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::int32_t>();
+      InstructionBaseRemainder::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -505,9 +505,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::int32_t>();
-      const auto value2 = static_cast<std::int32_t>(decoded.immediate_value);
-      InstructionBaseRemainder::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::int32_t>();
+      const auto value2 = static_cast<std::int32_t>(decoded.imm16);
+      InstructionBaseRemainder::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -518,9 +518,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
-      InstructionBaseRemainder::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
+      InstructionBaseRemainder::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -531,9 +531,9 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = static_cast<std::uint32_t>(decoded.immediate_value);
-      InstructionBaseRemainder::execute(decoded.dest_reg_addr, value1, value2, state);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = static_cast<std::uint32_t>(decoded.imm16);
+      InstructionBaseRemainder::execute(decoded.reg1_addr, value1, value2, state);
     }
   };
 
@@ -544,11 +544,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
 
       const auto result = std::rotl(value1, value2 % (CHAR_BIT * sizeof value1));
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -562,11 +562,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = static_cast<std::uint32_t>(decoded.imm16);
 
       const auto result = std::rotl(value1, value2 % (CHAR_BIT * sizeof value1));
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
       
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -580,11 +580,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = state.registers[decoded.reg3_addr].get<std::uint32_t>();
 
       const auto result = std::rotr(value1, value2 % (CHAR_BIT * sizeof value1));
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
       
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -598,11 +598,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto value1 = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto value2 = static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto value1 = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto value2 = static_cast<std::uint32_t>(decoded.imm16);
 
       const auto result = std::rotr(value1, value2 % (CHAR_BIT * sizeof value1));
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
       
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -626,11 +626,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = state.registers[decoded.reg3_addr].get<std::uint32_t>();
       const auto result = positions >= CHAR_BIT * sizeof src ? 0 : src << positions;
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -652,11 +652,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = static_cast<std::uint32_t>(decoded.imm16);
       const auto result = positions >= CHAR_BIT * sizeof src ? 0 : src << positions;
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -678,11 +678,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = state.registers[decoded.reg3_addr].get<std::uint32_t>();
       const auto result = positions >= CHAR_BIT * sizeof src ? 0 : src >> positions;
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -704,11 +704,11 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = static_cast<std::uint32_t>(decoded.imm16);
       const auto result = positions >= CHAR_BIT * sizeof src ? 0 : src >> positions;
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -730,14 +730,14 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = state.registers[decoded.reg3_addr].get<std::uint32_t>();
       const auto result = positions >= CHAR_BIT * sizeof src
         ? static_cast<std::uint32_t>(-1)
         : (src >> positions) | ((~(1u << (positions - 1))) << (CHAR_BIT * sizeof src - positions));
       // TODO: Check if this makes any sense??? What about unsigned values?
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -759,14 +759,14 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto src = state.registers[decoded.src1_reg_addr].get<std::uint32_t>();
-      const auto positions = static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto src = state.registers[decoded.reg2_addr].get<std::uint32_t>();
+      const auto positions = static_cast<std::uint32_t>(decoded.imm16);
       const auto result = positions >= CHAR_BIT * sizeof src
         ? static_cast<std::uint32_t>(-1)
         : (src >> positions) | ((~(1u << (positions - 1))) << (CHAR_BIT * sizeof src - positions));
       // TODO: Check if this makes any sense??? What about unsigned values?
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       if (positions != 0) {
         state.registers.getFLAGS().setBit(
@@ -788,10 +788,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        & state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        & state.registers[decoded.reg3_addr].get<std::uint32_t>();
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -805,10 +805,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        & static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        & static_cast<std::uint32_t>(decoded.imm16);
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -822,10 +822,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        | state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        | state.registers[decoded.reg3_addr].get<std::uint32_t>();
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -839,10 +839,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        | static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        | static_cast<std::uint32_t>(decoded.imm16);
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -856,10 +856,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        ^ state.registers[decoded.src2_reg_addr].get<std::uint32_t>();
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        ^ state.registers[decoded.reg3_addr].get<std::uint32_t>();
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -873,10 +873,10 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      const auto result = state.registers[decoded.src1_reg_addr].get<std::uint32_t>()
-        ^ static_cast<std::uint32_t>(decoded.immediate_value);
+      const auto result = state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        ^ static_cast<std::uint32_t>(decoded.imm16);
 
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);
@@ -886,7 +886,7 @@ namespace core::instructions {
   class JumpRegister final : public InstructionBase {
   public:
     constexpr static Opcode opcode = Opcode::JMPR;
-    using DecodedType = PTypeData;
+    using DecodedType = ITypeData;
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
@@ -894,11 +894,11 @@ namespace core::instructions {
       
       const std::uint32_t return_address = pc.get<std::uint32_t>() + InstructionData::ENCODING_SIZE;
       const std::uint32_t target_address =
-        state.registers[decoded.absolut_jump_target_reg_addr].get<std::uint32_t>()
-        + static_cast<std::int32_t>(decoded.relative_jump_target_offset)
+        state.registers[decoded.reg2_addr].get<std::uint32_t>()
+        + static_cast<std::int32_t>(decoded.imm16)
       ;
 
-      state.registers[decoded.link_reg_addr].set(return_address); 
+      state.registers[decoded.reg1_addr].set(return_address); 
       pc.set(target_address);
     }
   };
@@ -913,11 +913,11 @@ namespace core::instructions {
       auto& pc = state.registers.getPC();
       
       const std::uint32_t return_address = pc.get<std::uint32_t>() + InstructionData::ENCODING_SIZE;
-      state.registers[decoded.link_reg_addr].set(return_address); 
+      state.registers[decoded.reg1_addr].set(return_address); 
       
       const std::uint32_t target_address = 
         /* pc.get<std::uint32_t>() */
-        + static_cast<std::int32_t>(decoded.relative_jump_target)
+        + static_cast<std::int32_t>(decoded.imm20)
       ;
       // TODO: make relative
       pc.set(target_address);
@@ -936,10 +936,10 @@ namespace core::instructions {
 
       const auto& flags = state.registers.getFLAGS();
       auto& pc = state.registers.getPC();
-      const std::uint32_t target = /* pc.get<std::uint32_t>() + */ decoded.relative_jump_target;
+      const std::uint32_t target = /* pc.get<std::uint32_t>() + */ decoded.imm20;
       // TODO: make relative
 
-      switch (decoded.branch_condition_type) {
+      switch (decoded.condition) {
         case ConditionType::BranchAlways:
           pc.set(target);
           return;
@@ -1066,7 +1066,7 @@ namespace core::instructions {
 
     static void execute(const InstructionData::ParsedData& data, ProcessorState& state) {
       const auto& decoded = std::get<DecodedType>(data.data);
-      state.registers[decoded.dest_reg_addr].set(state.cycle_count);
+      state.registers[decoded.reg1_addr].set(state.cycle_count);
       state.registers.getFLAGS().setBit(Register::FlagIndex::Zero, state.cycle_count == 0);
       advancePC(state);
     }
@@ -1081,12 +1081,12 @@ namespace core::instructions {
       const auto& decoded = std::get<DecodedType>(data.data);
 
       std::uniform_int_distribution<std::int32_t> distribution(
-        state.registers[decoded.src1_reg_addr].get<std::int32_t>(),
-        state.registers[decoded.src2_reg_addr].get<std::int32_t>()
+        state.registers[decoded.reg2_addr].get<std::int32_t>(),
+        state.registers[decoded.reg3_addr].get<std::int32_t>()
       );
 
       const auto result = distribution(m_generator);
-      state.registers[decoded.dest_reg_addr].set(result);
+      state.registers[decoded.reg1_addr].set(result);
 
       updateFlagsZeroAndSign(result, state);
       advancePC(state);

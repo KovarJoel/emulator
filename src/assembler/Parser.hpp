@@ -120,7 +120,6 @@ namespace assembler {
     void parseRType();
     void parseIType();
     void parseBType();
-    void parsePType();
     void parseJType();
 
     void parseBranchTargetImmediate();

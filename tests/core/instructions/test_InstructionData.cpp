@@ -51,15 +51,15 @@ TEST_CASE("Encoding and decoding", "[Instructions::InstructionData]") {
   copy = copy.getRaw();
 
   CHECK(copy.decode().opcode == add.opcode);
-  CHECK(std::get<RTypeData>(copy.decode().data).dest_reg_addr == std::get<RTypeData>(add.data).dest_reg_addr);
-  CHECK(std::get<RTypeData>(copy.decode().data).src1_reg_addr == std::get<RTypeData>(add.data).src1_reg_addr);
-  CHECK(std::get<RTypeData>(copy.decode().data).src2_reg_addr == std::get<RTypeData>(add.data).src2_reg_addr);
+  CHECK(std::get<RTypeData>(copy.decode().data).reg1_addr == std::get<RTypeData>(add.data).reg1_addr);
+  CHECK(std::get<RTypeData>(copy.decode().data).reg2_addr == std::get<RTypeData>(add.data).reg2_addr);
+  CHECK(std::get<RTypeData>(copy.decode().data).reg3_addr == std::get<RTypeData>(add.data).reg3_addr);
 
   copy = load;
   copy = copy.getRaw();
 
   CHECK(copy.decode().opcode == load.opcode);
-  CHECK(std::get<ITypeData>(copy.decode().data).dest_reg_addr == std::get<ITypeData>(load.data).dest_reg_addr);
-  CHECK(std::get<ITypeData>(copy.decode().data).src1_reg_addr == std::get<ITypeData>(load.data).src1_reg_addr);
-  CHECK(std::get<ITypeData>(copy.decode().data).immediate_value == std::get<ITypeData>(load.data).immediate_value);
+  CHECK(std::get<ITypeData>(copy.decode().data).reg1_addr == std::get<ITypeData>(load.data).reg1_addr);
+  CHECK(std::get<ITypeData>(copy.decode().data).reg2_addr == std::get<ITypeData>(load.data).reg2_addr);
+  CHECK(std::get<ITypeData>(copy.decode().data).imm16 == std::get<ITypeData>(load.data).imm16);
 }
